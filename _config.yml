@@ -70,12 +70,12 @@ content:
         link: https://wego.monster/
         link_text: wego.monster
         sub_title: |
-          - FrontEnd 5명 <br/>
-          - BackEnd 2명(담당) <br/>
-          - UI/UX 1명 <br/>
+          FrontEnd 5명 <br/>
+          BackEnd 2명(담당) <br/>
+          UI/UX 1명 <br/>
         caption: 2025.11.25(화) - 2026.01.05(월)
         quote: >
-          담당 주요 기능 및 기술 의사 결정
+          담당한 주요 기능 및 기술 의사 결정
         description: | # this will include new lines to allow paragraphs
           - 모임 도메인 핵심 기능 설계·구현으로 생성·참여·종료 전 과정 자동화, 운영 개입 **0회** 유지
           - 업로드를 Pre-upload → Consume 구조 설계로 분리해 트랜잭션 독립성 확보
@@ -91,8 +91,17 @@ content:
           - Copilot, CodeRabbit Code Review 도입으로 PR 단계 품질 검증, 운영 실수 및 긴급 수정 최소화
           - AWS Lightsail + Docker Compose 단일 서버 전략으로 월 인프라 비용 약 **50,000원 → 0원 절감**
           - Prometheus·Grafana 및 HTTPS 구성으로 지표 가시화, 장애 원인 분석 시간 체감상 수 배 단축
-        quote: >
-          담당 주요 기능 및 기술 의사 결정222
+
+          <br/><br/>
+          기술 스택
+          - Backend: <mark>Java 21</mark>, <mark>Spring Boot 3.5.8</mark>, <mark>Spring Web</mark>, <mark>Validation</mark>, <mark>WebSocket</mark>
+          - Data: <mark>Spring Data JPA</mark>, <mark>QueryDSL</mark>, <mark>MySQL</mark>, <mark>H2</mark>, <mark>Spring Data Redis</mark>
+          - Security: <mark>Spring Security</mark>, <mark>JJWT</mark>
+          - Docs: <mark>Swagger</mark>, <mark>OpenAPI</mark>
+          - Infra/Deploy: <mark>Docker Compose</mark>, <mark>GitHub Actions</mark>, <mark>AWS Lightsail</mark>, <mark>AWS S3</mark>
+          - Image: <mark>WebP</mark>, <mark>Thumbnailator</mark>, <mark>ImageIO</mark>
+          - Observability: <mark>Actuator</mark>, <mark>Micrometer</mark>, <mark>Prometheus</mark>, <mark>Grafana</mark>
+          - Quality: <mark>Copilot</mark>, <mark>CodeRabbit</mark>
 
   - title: Education # Title for the section
     layout: list # Type of content section (list/text)
