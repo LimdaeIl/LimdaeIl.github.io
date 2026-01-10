@@ -176,12 +176,38 @@ content:
           스파르타 내일배움캠프 스프링 심화 3기 프로젝트 교육 과정에서 진행한 팀 프로젝트입니다. 4인 팀으로 구성된 MSA 기반 이커머스 플랫폼 개발 프로젝트이며, BackEnd 개발자로 참여해 회원 및 쿠폰 도메인을 담당했습니다.  
           프로젝트 기간 동안 단순 기능 구현을 넘어, 동시성·확장성·운영 관점에서의 설계와 개선 경험을 목표로 단계적인 아키텍처 고도화를 진행했습니다.
 
+  - title: 기술 스택
+    layout: list
+    content:
+      - layout: left
+        title: BackEnd
+        description: |
+          - Java 21
+          - Spring Boot 3.x, Spring Security 6.x
+          - Spring Data JPA, QueryDSL 5.x
+          - Gradle
+          - IntelliJ
+
+      - layout: left
+        title: DevOps
+        description: |
+          - MySQL 8.x, PostGreSQL, Redis
+          - Github Action
+          - AWS
+          - RabbitMQ, Kafka
+          - Git
+
+      - layout: left
+        title: Frontend
+        description: |
+          - HTML, CSS, JavaScript
+
   - title: 학력
     layout: list
     content:
       - layout: left
         title: 한국공학대학교
-        ㅎlink: https://www.tukorea.ac.kr/tukorea/index.do
+        link: https://www.tukorea.ac.kr/tukorea/index.do
         link_text: www.tukorea.ac.kr
         caption: 2020.03 - 2024.02
         sub_title: 컴퓨터공학 학사
