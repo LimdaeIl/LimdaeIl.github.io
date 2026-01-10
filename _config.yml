@@ -135,8 +135,8 @@ content:
         title: 한국공학대학교
         ㅎlink: https://www.tukorea.ac.kr/tukorea/index.do
         link_text: www.tukorea.ac.kr
-        caption: 컴퓨터공학 학사
-        sub_title: 2020.03 - 2024.02
+        caption: 2020.03 - 2024.02
+        sub_title: 컴퓨터공학 학사
         quote: >
           1998년 설립한 한국공학대학교는 대한민국 산업통상부의 주관, 경기도 시흥시에 설립된 이공계 특화 4년제 국책형 사립 종합대학교 입니다.
         description: |
@@ -146,8 +146,8 @@ content:
 
       - layout: left
         title: 동안고등학교
-        caption: 고등학교
-        sub_title: 2010.03 - 2013.02
+        caption: 2010.03 - 2013.02
+        sub_title: 고등학교
         quote: >
           1993년 설립된 동안고등학교는 경기도 안양시 동안구에 위치한 공립 일반계 고등학교입니다.
         description: |
@@ -160,8 +160,8 @@ content:
         title: |
           교육: 스프링 심화 3기
         caption: |
-          스파르타 내일배움캠프
-        sub_title: 2025.02.03(월) - 2025.04.25(금)
+          2025.02.03(월) - 2025.04.25(금)
+        sub_title: 스파르타 내일배움캠프
         quote: >
           KDT 심화 과정으로 온라인, 풀타임으로 진행된 백엔드 교육 부트캠프입니다.
         description: | # this will include new lines to allow paragraphs
