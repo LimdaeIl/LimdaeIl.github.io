@@ -69,7 +69,7 @@ content:
         title: 모임 플랫폼 서비스
         link: https://wego.monster/
         link_text: wego.monster
-        sub_title:
+        sub_title: |
           - FrontEnd 5명
           - BackEnd 2명(담당)
           - UI/UX 1명
