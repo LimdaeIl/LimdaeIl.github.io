@@ -93,25 +93,21 @@ content:
 
           <br/>
 
-          **기술 스택**
-          - **Backend**: <mark>Java 21</mark>, <mark>Spring Boot 3.5.8</mark>, <mark>Spring Web</mark>, <mark>Validation</mark>, <mark>WebSocket</mark>, <mark>SSE</mark>, 
-          - **Data**: <mark>Spring Data JPA</mark>, <mark>QueryDSL</mark>, <mark>MySQL</mark>, <mark>H2</mark>, <mark>Spring Data Redis</mark>
-          - **Security**: <mark>Spring Security</mark>, <mark>JJWT</mark>
-          - **Docs**: <mark>Swagger</mark>, <mark>OpenAPI</mark>
-          - **Infra/Deploy**: <mark>Docker Compose</mark>, <mark>GitHub Actions</mark>, <mark>AWS RDS</mark>, <mark>AWS S3</mark>, <mark>AWS EC2</mark> 
-          - **Image**: <mark>WebP</mark>, <mark>Thumbnailator</mark>, <mark>ImageIO</mark>
-          - **Observability**: <mark>Actuator</mark>, <mark>Micrometer</mark>, <mark>Prometheus</mark>, <mark>Grafana</mark>
-          - **Code Review**: <mark>Copilot</mark>, <mark>CodeRabbit</mark>
+          기술 스택
+          - <mark>Java 21</mark>, <mark>Spring Boot 3.5.8</mark>, <mark>Spring Web</mark>, <mark>Validation</mark>, <mark>WebSocket</mark>, <mark>SSE</mark>, 
+          - <mark>Spring Data JPA</mark>, <mark>QueryDSL</mark>, <mark>MySQL</mark>, <mark>H2</mark>, <mark>Spring Data Redis</mark>
+          - <mark>Spring Security</mark>, <mark>JJWT</mark>
+          - <mark>Swagger</mark>, <mark>OpenAPI</mark>
+          - <mark>Docker Compose</mark>, <mark>GitHub Actions</mark>, <mark>AWS RDS</mark>, <mark>AWS S3</mark>, <mark>AWS EC2</mark> 
+          - <mark>WebP</mark>, <mark>Thumbnailator</mark>, <mark>ImageIO</mark>
+          - <mark>Actuator</mark>, <mark>Micrometer</mark>, <mark>Prometheus</mark>, <mark>Grafana</mark>
+          - <mark>Copilot</mark>, <mark>CodeRabbit</mark>
 
           <br/>
           **Troubleshooting**
           - [모임 목록 조회 API: 커서 기반 페이징과 N+1을 설계 구조로 해결하기](https://limdaeil.tistory.com/18)
-          # 샵 한 개 
-          ## 샵 두 개
-          ### 샵 세 개
-          <h1> h1 한 개 </h1>
-          <h2> h2 한 개 </h2>
-          <h3> h3 한 개 </h3>
+            - fetch join 대신 Projection + IN 쿼리 설계로 모임 목록 조회의 N+1을 구조적으로 제거, **요청당 쿼리 수 3~4건으로 고정**
+            - 커서 기반(size+1) 페이징 적용으로 무한 스크롤 환경에서도 페이징 안정성과 성능 예측 가능성 확보
 
   - title: Education # Title for the section
     layout: list # Type of content section (list/text)
