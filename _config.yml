@@ -65,7 +65,7 @@ content:
   - title: 프로젝트 # Title for the section
     layout: list # Type of content section (list/text)
     content:
-      - layout: top-left
+      - layout: left
         title: We Go 모임 플랫폼 서비스
         link: https://wego.monster/
         link_text: wego.monster
