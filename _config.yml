@@ -129,14 +129,12 @@ content:
 
       - layout: left
         title: |
-          MSA 기반 이커머스 플랫폼 <br/>
-          Musinsam
+          MSA 기반 이커머스 플랫폼 서비스: Musinsam
         link: https://github.com/3-Musinsam/musinsam
         link_text: musinsam
         caption: 2025.04.03 - 2025.04.25
         sub_title: |
-          BackEnd 4명 중 1명 <br/>
-          (회원 · 쿠폰 도메인 담당)
+          BackEnd 4명(담당) <br/>
         quote: >
           담당 주요 기능 및 기술 의사 결정
         description: |
@@ -173,8 +171,7 @@ content:
 
           소개
 
-          스파르타 내일배움캠프 스프링 심화 3기 프로젝트 교육 과정에서 진행한 팀 프로젝트입니다.  
-          4인 팀으로 구성된 MSA 기반 이커머스 플랫폼 개발 프로젝트이며, BackEnd 개발자로 참여해 회원 및 쿠폰 도메인을 담당했습니다.  
+          스파르타 내일배움캠프 스프링 심화 3기 프로젝트 교육 과정에서 진행한 팀 프로젝트입니다. 4인 팀으로 구성된 MSA 기반 이커머스 플랫폼 개발 프로젝트이며, BackEnd 개발자로 참여해 회원 및 쿠폰 도메인을 담당했습니다.  
           프로젝트 기간 동안 단순 기능 구현을 넘어, **동시성·확장성·운영 관점에서의 설계와 개선 경험**을 목표로 단계적인 아키텍처 고도화를 진행했습니다.
 
   - title: 학력
