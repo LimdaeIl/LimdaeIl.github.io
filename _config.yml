@@ -1,5 +1,5 @@
 # Site
-repository: sproogen/resume-theme
+repository: LimdaeIl/LimdaeIl.github.io
 favicon: images/favicon.ico
 
 # Content configuration version
@@ -9,7 +9,7 @@ version: 2
 name: 임대일
 title: BackEnd Software Engineer
 email: optional94@naver.com
-website: https://limdaeil.tistory.com/
+website: https://limdaeil.tistory.com
 website_title: Blog
 
 # Dark Mode (true/false/never)
@@ -46,7 +46,7 @@ github_username: LimdaeIl
 # google_analytics: "UA-00000000-0"
 
 # About Section
-about_title: 소개
+about_title: 소개2
 about_profile_image: images/profile.jpg
 about_content: | # this will include new lines to allow paragraphs
   자기 소개 정상 동작 여부 확인
