@@ -183,8 +183,9 @@ content:
         title: BackEnd
         description: |
           - Java 21
-          - Spring Boot 3.x, Spring Security 6.x
+          - Spring Boot 3.x, Spring Security 6.x, SSE, Socket
           - Spring Data JPA, QueryDSL 5.x
+          - Prometheus, Grafana
           - Gradle
           - IntelliJ
 
