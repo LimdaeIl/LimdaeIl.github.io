@@ -46,7 +46,7 @@ github_username: LimdaeIl
 # google_analytics: "UA-00000000-0"
 
 # About Section
-about_title: 소개2
+about_title: 소개
 about_profile_image: images/profile.jpg
 about_content: | # this will include new lines to allow paragraphs
   성장을 가장 중요한 목표로 삼고, 이를 위해 다양한 교육 과정과 학습 활동에 적극적으로 참여해 왔습니다.
@@ -55,7 +55,7 @@ about_content: | # this will include new lines to allow paragraphs
   또한 IT 출판사 서평단 활동과 온라인 강의 플랫폼의 기술 이벤트, 개발 행사 등에 꾸준히 참여하며
   새로운 기술과 개념을 빠르게 접하고 정리하는 학습 습관을 만들어 왔습니다.
 
-  기술적인 기능 구현보다 **“사용자 경험”과 “팀의 개발 생태계”**를 중요하게 생각합니다.
+  기술적인 기능 구현보다 **“사용자 경험”과 “구성원의 경험”**를 중요하게 생각합니다.
   UI/UX 흐름에 맞춘 API 설계, 불필요한 요청을 줄이기 위한 응답 구조 개선, 안정적인 사용자 경험을 위한 서버 측 구조 분리 등을 시도해 왔습니다.
 
   학습을 일회성 경험으로 끝내지 않고, 기록과 문서화를 통해 스스로 설명할 수 있는 지식으로 남기는 것을 중요하게 생각하며
@@ -91,6 +91,8 @@ content:
           - Copilot, CodeRabbit Code Review 도입으로 PR 단계 품질 검증, 운영 실수 및 긴급 수정 최소화
           - AWS Lightsail + Docker Compose 단일 서버 전략으로 월 인프라 비용 약 **50,000원 → 0원 절감**
           - Prometheus·Grafana 및 HTTPS 구성으로 지표 가시화, 장애 원인 분석 시간 체감상 수 배 단축
+        quote: >
+          담당 주요 기능 및 기술 의사 결정222
 
   - title: Education # Title for the section
     layout: list # Type of content section (list/text)
