@@ -55,7 +55,7 @@ about_content: | # this will include new lines to allow paragraphs
   또한 IT 출판사 서평단 활동과 온라인 강의 플랫폼의 기술 이벤트, 개발 행사 등에 꾸준히 참여하며
   새로운 기술과 개념을 빠르게 접하고 정리하는 학습 습관을 만들어 왔습니다.
 
-  기술적인 기능 구현보다 “사용자 경험”과 “팀의 개발 생태계”를  중요하게 생각합니다.
+  기술적인 기능 구현보다 **“사용자 경험”과 “팀의 개발 생태계”**를 중요하게 생각합니다.
   UI/UX 흐름에 맞춘 API 설계, 불필요한 요청을 줄이기 위한 응답 구조 개선, 안정적인 사용자 경험을 위한 서버 측 구조 분리 등을 시도해 왔습니다.
 
   학습을 일회성 경험으로 끝내지 않고, 기록과 문서화를 통해 스스로 설명할 수 있는 지식으로 남기는 것을 중요하게 생각하며
@@ -66,27 +66,30 @@ content:
     layout: list # Type of content section (list/text)
     content:
       - layout: left
-        title: We Go 모임 플랫폼 서비스
+        title: 모임 플랫폼 서비스
         link: https://wego.monster/
         link_text: wego.monster
-        sub_title: BackEnd 담당
+        sub_title:
+          - FrontEnd 5명
+          - BackEnd 2명(담당)
+          - UI/UX 1명
         caption: 2025.11.25(화) - 2026.01.05(월)
         quote: >
-          주요 기능 및 기술 의사 결정
+          담당 주요 기능 및 기술 의사 결정
         description: | # this will include new lines to allow paragraphs
-          - 모임 도메인 핵심 기능 설계·구현으로 생성·참여·종료 전 과정 자동화, 운영 개입 0회 유지
-          - 업로드를 Pre-upload → Consume 구조로 분리해 트랜잭션 독립성 확보
-          - WebP 변환 및 리사이징으로 스토리지 사용량 절감 및 호환성 강화, 약 70% 사용량 절감
-          - Redis TTL 기반 임시 이미지 관리로 미사용 이미지 자동 정리, 운영 개입 0회 유지
-          - Redis SETNX + TTL 기반 쿨다운 제어로 중복 요청 100% 차단, 실패 시 즉시 재시도 가능한 UX 보장
-          - 스케줄링 기반 상태 전환 및 벌크 업데이트 적용으로 대량 처리 시 쿼리 수 N → 1 감소
-          - SSE 기반 모임 알림 구축 및 AFTER_COMMIT 처리로 알림-데이터 불일치 0% 유지
+          - 모임 도메인 핵심 기능 설계·구현으로 생성·참여·종료 전 과정 자동화, 운영 개입 **0회** 유지
+          - 업로드를 Pre-upload → Consume 구조 설계로 분리해 트랜잭션 독립성 확보
+          - WebP 변환 및 리사이징으로 스토리지 사용량 절감 및 호환성 강화, 약 **70% 사용량 절감**
+          - Redis TTL 기반 임시 이미지 관리로 미사용 이미지 자동 정리, 운영 개입 **0회** 유지
+          - Redis SETNX + TTL 기반 쿨다운 제어로 **중복 요청 100% 차단**, 실패 시 즉시 재시도 가능한 UX 보장
+          - 스케줄링 기반 상태 전환 및 벌크 업데이트 적용으로 대량 처리 시 쿼리 수 **N → 1 감소**
+          - SSE 기반 모임 알림 구축 및 AFTER_COMMIT 처리로 알림-데이터 불일치 **0% 유지**
           - 커서 기반 페이징 적용으로 대량 팔로워 환경에서도 일정한 응답 성능 확보
           - RFC 7807 기반의 일관된 에러 응답과 예측 가능한 실패 관리
-          - FrontEnd·UI/UX 협업 환경에서 Swagger 기반 API·스키마 명세 주도로 커뮤니케이션 이슈 70~80% 감소
+          - FrontEnd·UI/UX 협업 환경에서 Swagger 기반 API·스키마 명세 주도로 커뮤니케이션 이슈 **70~80% 감소**
           - GitHub Actions 기반 CI/CD 구축으로 배포 자동화
           - Copilot, CodeRabbit Code Review 도입으로 PR 단계 품질 검증, 운영 실수 및 긴급 수정 최소화
-          - AWS Lightsail + Docker Compose 단일 서버 전략으로 월 인프라 비용 약 50,000원 → 0원 절감
+          - AWS Lightsail + Docker Compose 단일 서버 전략으로 월 인프라 비용 약 **50,000원 → 0원 절감**
           - Prometheus·Grafana 및 HTTPS 구성으로 지표 가시화, 장애 원인 분석 시간 체감상 수 배 단축
 
   - title: Education # Title for the section
