@@ -116,9 +116,9 @@ content:
             - Pre-upload + Redis TTL + consume 구조로 이미지를 서버가 보증, 미사용 이미지는 GC로 자동 정리 구현
             - 업로드 실패 이슈를 Nginx·애플리케이션 설정까지 포함해 해결, 안정적인 이미지 업로드 파이프라인 구축
           - [모임 참가 신청 API: 모임 최대 참가자 수 동시성 문제 해결하기](https://limdaeil.tistory.com/23)
-            - 동시 참여 요청으로 발생하는 모임 초과(Overbooking) 문제를 레이스 컨디션 관점에서 분석
-            - SELECT … FOR UPDATE 기반 Pessimistic Lock으로 groupId 단위 트랜잭션 직렬화 설계
-            - FREE, APPROVAL 정책별 정원 체크 시점을 분리하고, attend·approve·leave 전 구간에서 정합성 보장
+            - 모임 참가 API에서 멀티스레드 환경으로 인해 발생하는 레이스 컨디션 문제를 분석
+            - 모임(Group)을 기준으로 PESSIMISTIC_WRITE 락을 적용해 정원 체크 구간을 직렬화
+            - 즉시 참석/승인제 정책에 따라 정원 체크 시점을 분리해 트랜잭션 정합성 확보
 
   - title: Education # Title for the section
     layout: list # Type of content section (list/text)
