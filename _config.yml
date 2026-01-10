@@ -113,7 +113,7 @@ content:
             - 커서 기반(size+1) 페이징 적용으로 무한 스크롤 환경에서도 페이징 안정성과 성능 확보
           - [이미지 로딩 속도와 크기 70% 단축: WebP 변환부터 Redis 프리업로드로 URL을 보증하기](https://limdaeil.tistory.com/22)
             - 이미지 업로드 시 WebP 변환 + 용도별 리사이징을 적용해 이미지 로딩 속도 개선 및 크기 약 70% 단축
-            - Pre-upload(imageKey) + Redis TTL + consume 구조로 이미지–도메인 연결을 서버가 보증, 미사용 이미지 자동 정리
+            - Pre-upload + Redis TTL + consume 구조로 이미지를 서버가 보증, 미사용 이미지는 GC로 자동 정리 구현
             - 업로드 실패 이슈를 Nginx·애플리케이션 설정까지 포함해 해결, 안정적인 이미지 업로드 파이프라인 구축
 
   - title: Education # Title for the section
