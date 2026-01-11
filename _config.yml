@@ -280,7 +280,7 @@ content:
           서평단으로 선정되어 도서를 무료로 지원받아 솔직하게 쓴 글입니다.
         description: | # this will include new lines to allow paragraphs
           - 2026.01 [서평단: 그림으로 이해하는 도커와 쿠버네티스](https://limdaeil.tistory.com/21)
-          - 2025.12 [서평단: Do it! HTML+CSS 웹 표준의 정석 탄탄한 웹 기본기를 위한 교과서 | 개정판 3 판](https://limdaeil.tistory.com/19)
+          - 2025.12 [서평단: Do it! HTML+CSS 웹 표준의 정석 탄탄한 웹 기본기를 위한 교과서. 개정판 3 판](https://limdaeil.tistory.com/19)
 # Footer
 footer_show_references: false
 # references_title: References on request (Override references text)
