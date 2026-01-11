@@ -235,11 +235,11 @@ content:
       - layout: left
         title: 자격증
         description: |
-          - <pre>정보처리기사 최종합격       2023.11  한국산업인력공단</pre>
-          - <pre>SQL개발자(SQLD자격)        2023.10  최종합격(한국데이터베이스진흥센터)</pre>
-          - <pre>정보처리산업기사            2017.11  최종합격(한국산업인력공단)</pre>
-          - <pre>네트워크관리사2급           2017.06  최종합격(한국정보통신자격협회)</pre>
-          - <pre>컴퓨터활용능력1급           2017.04  최종합격(대한상공회의소)</pre>
+          - 정보처리기사&emsp;&emsp;&emsp;2023.11&emsp;최종합격&emsp;한국산업인력공단
+          - SQL개발자(SQLD자격)&emsp;&emsp;&emsp;2023.10&emsp;최종합격&emsp;한국데이터베이스진흥센터
+          - 정보처리산업기사&emsp;&emsp;&emsp;2017.11&emsp;최종합격&emsp;한국산업인력공단
+          - 네트워크관리사2급&emsp;&emsp;&emsp;2017.06&emsp;최종합격&emsp;한국정보통신자격협회
+          - 컴퓨터활용능력1급&emsp;&emsp;&emsp;2017.04&emsp;최종합격&emsp;대한상공회의소
 
       - layout: left
         title: 병역사항
