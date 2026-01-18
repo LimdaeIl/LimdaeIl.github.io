@@ -61,7 +61,7 @@ about_content: | # this will include new lines to allow paragraphs
   새로운 기술을 무작정 따라가기보다는, 필요한 이유를 이해하고 서비스에 적절히 녹여내는 개발자가 되는 것이 목표입니다. 앞으로도 꾸준한 학습과 정리를 통해 신뢰할 수 있는 백엔드 개발자로 성장해 나가고자 합니다.
 
 content:
-  - title: 프로젝트
+  - title: 프로젝트: 모임 플랫폼 서비스
     layout: list
     content:
       - layout: left
@@ -142,7 +142,7 @@ content:
 
 
 content:
-  - title: 프로젝트
+  - title: 프로젝트: MSA 기반 이커머스 플랫폼 서비스
     layout: list
     content:
       - layout: left
