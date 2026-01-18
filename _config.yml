@@ -108,8 +108,7 @@ content:
 
           - **인프라 · 운영 비용 절감**
             - AWS Lightsail + Docker Compose 단일 서버 구성 → 월 인프라 비용 약 50,000원 → 0원 수준으로 절감
-            - Prometheus + Grafana 구성으로
-            - 장애 원인 분석 시간 체감상 수 배 단축
+            - Prometheus + Grafana 구성으로 장애 원인 분석 시간 체감상 수 배 단축
 
           <br/>
 
