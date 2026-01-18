@@ -141,10 +141,8 @@ content:
 
           <br/>
 
-
-content:
   - title: |
-     프로젝트: MSA 기반 이커머스 플랫폼 서비스
+      프로젝트: MSA 기반 이커머스 플랫폼 서비스
     layout: list
     content:
       - layout: left
