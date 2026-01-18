@@ -134,9 +134,9 @@ content:
             - Pre-upload + Redis TTL 구조로 미사용 이미지 자동 정리 및 업로드 안정성 확보
           - [모임 참가 신청 API: 모임 최대 참가자 수 동시성 문제 해결하기](https://limdaeil.tistory.com/23)
             - 동시 요청으로 발생하는 레이스 컨디션을 분석하고 PESSIMISTIC_WRITE 적용
-            - 정원 체크 시점을 분리해 트랜잭션 정합성과 동시성 안정성 확보
+            - 정원 체크 시점을 분리해 **트랜잭션 정합성과 동시성 안정성 확보**
           - [CORS 이슈 해결: 인증 필터 환경에서의 Preflight 요청 처리](https://limdaeil.tistory.com/27)
-            - JWT 인증 필터로 차단되던 Preflight 요청을 분석하여 CORS 설정 구조 개선
+            - JWT 인증 필터로 차단되던 Preflight 요청을 분석하여 **CORS 설정 구조 개선**
             - 프론트 요청 실패율 0%로 개선하고 운영 환경에서도 안정적 통신 보장
 
           <br/>
