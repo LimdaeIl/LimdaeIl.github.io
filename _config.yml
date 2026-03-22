@@ -49,9 +49,9 @@ github_username: LimdaeIl
 about_title: 소개
 about_profile_image: images/profile.jpg
 about_content: | # this will include new lines to allow paragraphs
-  간절함과 성실함을 바탕으로 성장하고 있는 신입 개발자 임대일입니다.
-  Java와 Spring Boot 기반 백엔드 개발을 중심으로 학습해왔으며, 단순 구현을 넘어 설계 의도와 구조를 이해하는 데 집중해왔습니다. 특히 “왜 이렇게 설계하는지”를 고민하며 개발하는 습관을 중요하게 생각합니다.
-  교육 과정과 프로젝트, 기업 협약 프로젝트 및 기술 활동에 참여하며 이론에 그치지 않고 실무 관점에서 기술을 이해하려 노력해왔습니다. 또한 배운 내용을 정리하고 실제 서비스에 적용하며 개선하는 과정을 지속하고 있습니다. 
+  간절함과 성실함을 바탕으로 성장하고 있는 신입 개발자 임대일입니다. <br/>
+  Java와 Spring Boot 기반 백엔드 개발을 중심으로 학습해왔으며, 단순 구현을 넘어 설계 의도와 구조를 이해하는 데 집중해왔습니다. 특히 “왜 이렇게 설계하는지”를 고민하며 개발하는 습관을 중요하게 생각합니다. <br/>  
+  교육 과정과 프로젝트, 기업 협약 프로젝트 및 기술 활동에 참여하며 이론에 그치지 않고 실무 관점에서 기술을 이해하려 노력해왔습니다. 또한 배운 내용을 정리하고 실제 서비스에 적용하며 개선하는 과정을 지속하고 있습니다.   
   늦게 개발을 시작한 만큼 더 성실하게 임하고 있으며, 꾸준한 학습을 통해 팀에 신뢰를 주는 백엔드 개발자로 성장하는 것이 목표입니다.
 
 content:
@@ -169,7 +169,7 @@ content:
 
           <br/>
 
-          기술 스택
+          **기술 스택**
           - <mark>Java 17</mark>, <mark>Spring Boot 3.x</mark>, <mark>Spring Cloud (Eureka, OpenFeign)</mark>
           - <mark>Spring Security</mark>, <mark>JWT</mark>
           - <mark>Spring Data JPA</mark>, <mark>QueryDSL</mark>, <mark>PostgreSQL</mark>
@@ -179,7 +179,7 @@ content:
 
           <br/>
 
-          트러블슈팅
+          **트러블슈팅**
           - DB 비관적 락 기반 쿠폰 발급 로직에서 발생한 경합·중복 발급 문제 분석
           - @Transactional + PESSIMISTIC_WRITE 적용으로 발급 정합성 확보
           - Redis Atomic 연산 및 분산 락 도입으로 발급 재고 감소 과정의 레이스 컨디션 완화
