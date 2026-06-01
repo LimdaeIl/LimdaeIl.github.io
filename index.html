@@ -1,1 +1,512 @@
-# Index.html
+<!DOCTYPE html>
+<html lang="ko" data-theme="light">
+<head>
+  <!-- 기본 문서 설정 -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- 검색/공유용 메타 정보 -->
+  <title>임대일 — Backend Developer</title>
+  <meta name="description" content="Java, Spring Boot, PostgreSQL 기반 백엔드 개발자 임대일의 포트폴리오입니다." />
+
+  <!-- Google Fonts: CSS에서 Montserrat, Lato, Roboto 사용 -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+      href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=Montserrat:wght@600;700;800;900&family=Roboto:wght@400;500;700;900&display=swap"
+      rel="stylesheet"
+  />
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet" />
+
+  <!-- 공통 스타일 -->
+  <link rel="stylesheet" href="assets/css/main.css" />
+</head>
+
+<body>
+<!-- =====================================================
+     Header Navigation
+     - 상단 고정 메뉴
+     - 각 섹션 id로 이동
+     ===================================================== -->
+<nav>
+  <div class="nav-inner">
+    <!-- 왼쪽 로고 -->
+    <a class="nav-logo" href="#about" aria-label="홈으로 이동">임대일</a>
+
+    <!-- 중앙 메뉴 -->
+    <div class="nav-links" aria-label="주요 섹션 이동">
+      <a href="#about">소개</a>
+      <a href="#career">경력</a>
+      <a href="#projects">프로젝트</a>
+      <a href="#troubleshooting">트러블슈팅</a>
+      <a href="#stack">기술스택</a>
+      <a href="#certificates">자격증</a>
+      <a href="#activities">교육 / 활동</a>
+      <a href="#contact">연락처</a>
+    </div>
+
+    <!-- 오른쪽 다크모드 토글 -->
+    <div class="toggle-wrap">
+      <span class="toggle-icon" id="toggle-icon" aria-hidden="true">☀️</span>
+      <button class="theme-toggle" id="themeToggle" type="button" aria-label="다크모드 전환"></button>
+    </div>
+  </div>
+</nav>
+
+<main>
+  <div class="container">
+    <!-- =====================================================
+         Hero / About
+         - 첫 화면
+         - 가장 중요한 자기소개 영역
+         ===================================================== -->
+    <section id="about" class="fade-up">
+      <div class="hero-compact">
+        <!-- 상단: 왼쪽 기본 정보 + 오른쪽 프로필 -->
+        <div class="hero-top">
+          <div class="hero-info">
+            <p class="hero-eyebrow">Backend Developer Portfolio</p>
+
+            <h1 class="hero-name">임대일</h1>
+
+            <p class="hero-title">Java / Spring 기반 백엔드 개발자</p>
+
+            <div class="hero-contact-line">
+              <span>이메일</span>
+              <a href="mailto:limdaeil94@gmail.com">limdaeil94@gmail.com</a>
+            </div>
+          </div>
+
+          <aside class="hero-profile-box" aria-label="프로필 및 외부 링크">
+            <div class="profile-card">
+              <img
+                  class="hero-photo"
+                  src="images/profile.jpg"
+                  alt="임대일 프로필 사진"
+                  onerror="this.parentElement.classList.add('is-empty')"
+              />
+              <div class="profile-placeholder">
+                <span>Profile</span>
+                <strong>images/profile.jpg</strong>
+              </div>
+            </div>
+
+            <div class="profile-icon-links">
+              <a href="https://github.com/limdaeil94" target="_blank" rel="noopener" aria-label="GitHub">
+                <span class="material-icons-round">account_tree</span>
+              </a>
+
+              <a href="https://limdaeil94.tistory.com" target="_blank" rel="noopener" aria-label="Tistory Blog">
+                <span class="material-icons-round">title</span>
+              </a>
+
+              <a href="tel:010-6366-6725" aria-label="Phone">
+                <span class="material-icons-round">call</span>
+              </a>
+
+              <a href="mailto:limdaeil94@gmail.com" aria-label="Email">
+                <span class="material-icons-round">mail</span>
+              </a>
+            </div>
+          </aside>
+        </div>
+
+        <!-- 가로 구분선 -->
+        <div class="hero-divider"></div>
+
+        <!-- 하단: 상세 자기소개 -->
+        <div class="intro-tags">
+          <p>
+            <span>#문제해결</span>
+            운영 중 발생한 SIEM/PRTG 데이터 수집 실패, 재시도 부재, 비동기 과부하 문제를 분석하고 안정적인 수집 흐름으로 개선했습니다.
+          </p>
+
+          <p>
+            <span>#백엔드</span>
+            Java, Spring Boot, PostgreSQL, MySQL 기반으로 데이터 중심의 백엔드 기능을 구현합니다.
+          </p>
+
+          <p>
+            <span>#운영개선</span>
+            데이터 정합성, 장애 재발 방지, 성능 개선을 고려하며 운영 가능한 구조를 지향합니다.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section id="career" class="fade-up">
+      <div class="section-header">
+        <div>
+          <span class="section-kicker">Career</span>
+          <h2 class="section-title">경력</h2>
+        </div>
+      </div>
+
+      <div class="career-list">
+        <article class="career-item">
+          <div class="career-period">2026.02 ~ 2026.05</div>
+
+          <div class="career-content">
+            <h3 class="career-company">이츠인</h3>
+            <div class="career-meta">Dev Team</div>
+            <p class="career-desc">
+
+              Java, Spring Boot, PostgreSQL 기반의 백엔드 기능 개발과 운영 데이터 처리 업무를 수행했습니다.
+              FortiSIEM, PRTG 연동 환경에서 데이터 수집 실패, 비동기 처리, 마이그레이션, PDF 생성 성능 개선 등
+              운영 과정에서 발생한 문제를 분석하고 개선했습니다.
+
+
+            </p>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <!-- =====================================================
+         projects
+         - 프로젝트 경험
+         - 개인적으로 진행한 프로젝트나 회사에서 맡았던 주요 프로젝트를 간략히 소개
+         ===================================================== -->
+    <section id="projects" class="fade-up">
+      <div class="section-header">
+        <div>
+          <span class="section-kicker">Projects</span>
+          <h2 class="section-title">프로젝트</h2>
+        </div>
+      </div>
+
+      <div class="project-list">
+        <article class="project-item">
+          <h3 class="project-title">SIEM 데이터 수집 안정화 및 비동기 처리 개선</h3>
+
+          <div class="project-meta">
+            <span>이츠인</span>
+            <span class="project-meta-divider">|</span>
+            <span>2026.02 ~ 2026.05 (4개월)</span>
+          </div>
+
+          <h4 class="project-subtitle">Description</h4>
+          <p class="project-desc">
+            FortiSIEM 기반 보고서 데이터 수집 과정에서 발생한 요청 실패, 재시도 부재, 비동기 과부하 문제를 분석하고
+            안정적인 수집 흐름으로 개선했습니다.
+          </p>
+
+          <h4 class="project-subtitle">Experience</h4>
+          <ul class="project-experience">
+            <li>
+              SIEM/PRTG 데이터 수집 실패 원인을 분석하고 재시도 로직과 수집 흐름을 개선했습니다.
+            </li>
+            <li>
+              비동기 처리 구조와 작업 동시성을 조정하여 외부 시스템 부하를 줄이고 수집 안정성을 높였습니다.
+            </li>
+          </ul>
+
+          <h4 class="project-subtitle">Tech Stack</h4>
+          <div class="project-tags">
+            <span class="tag tag-spring">Spring Boot</span>
+            <span class="tag tag-postgresql">PostgreSQL</span>
+            <span class="tag tag-redis">Redis</span>
+            <span class="tag tag-fortisiem">FortiSIEM</span>
+            <span class="tag tag-bullmq">BullMQ</span>
+          </div>
+        </article>
+        <article class="project-item">
+          <h3 class="project-title">MySQL에서 PostgreSQL로 데이터 마이그레이션</h3>
+
+          <div class="project-meta">
+            <span>이츠인</span>
+            <span class="project-meta-divider">|</span>
+            <span>2026.03 ~ 2026.05 (3개월)</span>
+          </div>
+
+          <h4 class="project-subtitle">Description</h4>
+          <p class="project-desc">
+            기존 MySQL 기반 데이터를 PostgreSQL 구조에 맞게 이전하고, 테이블 관계와 타입 변환 오류를 점검하며
+            운영 데이터 정합성을 검증했습니다.
+          </p>
+
+          <h4 class="project-subtitle">Experience</h4>
+          <ul class="project-experience">
+            <li>
+              MySQL과 PostgreSQL 간 컬럼 타입 차이로 발생한 timestamp 변환 오류를 분석하고 수정했습니다.
+            </li>
+            <li>
+              고객, 장비, 보고서 관련 테이블의 참조 관계를 점검하며 마이그레이션 후 데이터 누락 여부를 확인했습니다.
+            </li>
+          </ul>
+
+          <h4 class="project-subtitle">Tech Stack</h4>
+          <div class="project-tags">
+            <span class="tag tag-mysql">MySQL</span>
+            <span class="tag tag-postgresql">PostgreSQL</span>
+            <span class="tag tag-spring">Spring Boot</span>
+            <span class="tag tag-github">Github</span>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <!-- =====================================================
+         experience
+         - 문제 해결 기록
+         - 이력서에서 강점으로 보일 수 있는 장애/개선 사례
+         ===================================================== -->
+    <section id="experience" class="fade-up">
+      <div class="section-header">
+        <div>
+          <span class="section-kicker">Experience</span>
+          <h2 class="section-title">기술 경험</h2>
+        </div>
+      </div>
+
+      <div class="experience-group">
+        <h3 class="experience-category">신규 서비스 개발</h3>
+
+        <div class="experience-list">
+          <article class="experience-item">
+            <a class="experience-title" href="posts/2026/siem-collection-optimization/">
+              SIEM 데이터 수집 안정화 및 비동기 처리 개선
+            </a>
+
+            <div class="experience-meta">
+              <span class="source-tag tag-itsin">이츠인</span>
+              <time datetime="2026-05">2026.05</time>
+            </div>
+          </article>
+        </div>
+      </div>
+
+      <div class="experience-group">
+        <h3 class="experience-category">시스템 엔지니어링</h3>
+
+        <div class="experience-list">
+          <article class="experience-item">
+            <a class="experience-title" href="posts/2026/postgres-timestamp-casting/">
+              PostgreSQL timestamp 타입 마이그레이션 오류 해결
+            </a>
+
+            <div class="experience-meta">
+              <span class="source-tag tag-itsin">이츠인</span>
+              <time datetime="2026-05">2026.05</time>
+            </div>
+          </article>
+
+          <article class="experience-item">
+            <a class="experience-title" href="posts/2026/prtg-report-data-parsing/">
+              PRTG/FortiSIEM 응답 데이터 파싱 이슈 분석
+            </a>
+
+            <div class="experience-meta">
+              <span class="source-tag tag-itsin">이츠인</span>
+              <time datetime="2026-05">2026.05</time>
+            </div>
+          </article>
+        </div>
+      </div>
+
+      <div class="experience-group">
+        <h3 class="experience-category">아키텍처 설계</h3>
+
+        <div class="experience-list">
+          <article class="experience-item">
+            <a class="experience-title" href="posts/2026/report-system-architecture/">
+              보고서 생성 시스템 요청 흐름 설계
+            </a>
+
+            <div class="experience-meta">
+              <span class="source-tag tag-itsin">이츠인</span>
+              <time datetime="2026-05">2026.05</time>
+            </div>
+          </article>
+        </div>
+      </div>
+
+      <div class="experience-group">
+        <h3 class="experience-category">프로젝트 관리</h3>
+
+        <div class="experience-list">
+          <article class="experience-item">
+            <a class="experience-title" href="posts/2026/report-collection-schedule-management/">
+              보고서 수집 일정 및 작업 우선순위 관리
+            </a>
+
+            <div class="experience-meta">
+              <span class="source-tag tag-itsin">이츠인</span>
+              <time datetime="2026-05">2026.05</time>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- =====================================================
+         Tech Stack
+         - 보유 기술
+         - hi 클래스는 강조하고 싶은 기술에 사용
+         ===================================================== -->
+    <section id="stack" class="fade-up">
+      <div class="section-header">
+        <div>
+          <span class="section-kicker">Tech Stack</span>
+          <h2 class="section-title">기술 스택</h2>
+        </div>
+      </div>
+
+      <div class="stack-group">
+        <div class="stack-group-label">Language</div>
+        <div class="stack-badges">
+          <span class="badge hi">Java</span>
+          <span class="badge">JavaScript</span>
+          <span class="badge">TypeScript</span>
+          <span class="badge">SQL</span>
+        </div>
+      </div>
+
+      <div class="stack-group">
+        <div class="stack-group-label">Framework</div>
+        <div class="stack-badges">
+          <span class="badge hi">Spring Boot</span>
+          <span class="badge">FastAPI</span>
+          <span class="badge">React</span>
+          <span class="badge">Next.js</span>
+          <span class="badge">NestJS</span>
+        </div>
+      </div>
+
+      <div class="stack-group">
+        <div class="stack-group-label">Database</div>
+        <div class="stack-badges">
+          <span class="badge hi">PostgreSQL</span>
+          <span class="badge hi">MySQL</span>
+          <span class="badge">Redis</span>
+        </div>
+      </div>
+
+      <div class="stack-group">
+        <div class="stack-group-label">Messaging</div>
+        <div class="stack-badges">
+          <span class="badge">RabbitMQ</span>
+          <span class="badge">BullMQ</span>
+        </div>
+      </div>
+
+      <div class="stack-group">
+        <div class="stack-group-label">Infrastructure / DevOps</div>
+        <div class="stack-badges">
+          <span class="badge">Linux</span>
+          <span class="badge">Docker</span>
+          <span class="badge">Nginx</span>
+          <span class="badge">GitHub Actions</span>
+          <span class="badge">GitHub Pages</span>
+        </div>
+      </div>
+
+      <div class="stack-group">
+        <div class="stack-group-label">Collaboration</div>
+        <div class="stack-badges">
+          <span class="badge">Git</span>
+          <span class="badge">GitHub</span>
+          <span class="badge">Notion</span>
+          <span class="badge">Slack</span>
+        </div>
+      </div>
+    </section>
+    <!-- =====================================================
+         certificates
+         - 자격증
+         ===================================================== -->
+    <section id="certificates" class="fade-up">
+      <div class="section-header">
+        <div>
+          <span class="section-kicker">Certificates</span>
+          <h2 class="section-title">자격증</h2>
+        </div>
+      </div>
+
+      <div class="certificate-list">
+        <article class="certificate-item">
+          <h3 class="certificate-title">정보처리기사</h3>
+          <div class="certificate-meta">
+            <span>한국산업인력공단</span>
+            <span class="certificate-meta-divider">|</span>
+            <span>2026.00</span>
+          </div>
+        </article>
+        <article class="certificate-item">
+          <h3 class="certificate-title">정보처리기사</h3>
+          <div class="certificate-meta">
+            <span>한국산업인력공단</span>
+            <span class="certificate-meta-divider">|</span>
+            <span>2026.00</span>
+          </div>
+        </article>
+      </div>
+    </section>
+    <!-- =====================================================
+         Contact
+         - 마지막 연락처 카드
+         ===================================================== -->
+    <section id="activities" class="fade-up">
+      <div class="section-header">
+        <div>
+          <span class="section-kicker">Activities</span>
+          <h2 class="section-title">활동</h2>
+        </div>
+      </div>
+
+      <div class="activity-list">
+        <article class="activity-item">
+          <h3 class="activity-title">기술 블로그 운영</h3>
+
+          <div class="activity-meta">
+            <span>개인</span>
+            <span class="activity-meta-divider">|</span>
+            <span>2026.02 ~ 현재</span>
+          </div>
+
+          <p class="activity-desc">
+            백엔드 개발, 데이터베이스, 운영 장애 분석, 트러블슈팅 과정을 정리하며 학습 내용을 기록하고 있습니다. <br><br>
+            <a href="https://limdaeil94.tistory.com" target="_blank" rel="noopener">블로그 바로가기</a>
+          </p>
+        </article>
+      </div>
+    </section>
+
+
+    <!-- =====================================================
+         Contact
+         - 마지막 연락처 카드
+         ===================================================== -->
+    <section id="contact" class="fade-up">
+      <div class="section-header">
+        <div>
+          <span class="section-kicker">Contact</span>
+          <h2 class="section-title">연락처</h2>
+        </div>
+        <p class="section-desc">
+          포트폴리오와 프로젝트 기록은 계속 업데이트할 예정입니다.
+        </p>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">임대일</h3>
+        </div>
+        <p class="card-desc">
+          백엔드 개발자로서 운영 가능한 구조, 데이터 정합성, 장애 재발 방지, 성능 개선에 관심이 있습니다.
+        </p>
+        <a class="card-link" href="mailto:limdaeil94@gmail.com">limdaeil94@gmail.com</a>
+      </div>
+    </section>
+  </div>
+</main>
+
+<!-- Footer -->
+<footer>
+  © 2026 Lim Daeil. Built with HTML, CSS, JavaScript and GitHub Pages.
+</footer>
+
+<!-- 공통 스크립트: 다크모드, fade-up, active nav -->
+<script src="assets/js/main.js"></script>
+</body>
+</html>
