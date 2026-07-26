@@ -1,79 +1,78 @@
 <!DOCTYPE html>
 <html lang="ko" data-theme="light">
 <head>
-  <!-- 기본 문서 설정 -->
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <!-- 검색/공유용 메타 정보 -->
   <title>임대일 — Backend Developer</title>
-  <meta name="description" content="Java, Spring Boot, PostgreSQL 기반 백엔드 개발자 임대일의 포트폴리오입니다." />
+  <meta
+      name="description"
+      content="Java, Spring Boot, PostgreSQL 기반 백엔드 개발자 임대일의 포트폴리오입니다."
+  >
 
-  <!-- Google Fonts: CSS에서 Montserrat, Lato, Roboto 사용 -->
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link
-      href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=Montserrat:wght@600;700;800;900&family=Roboto:wght@400;500;700;900&display=swap"
       rel="stylesheet"
-  />
-  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet" />
+      href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=Montserrat:wght@600;700;800;900&family=Roboto:wght@400;500;700;900&display=swap"
+  >
 
-  <!-- 공통 스타일 -->
-  <link rel="stylesheet" href="assets/css/main.css" />
+  <link rel="stylesheet" href="assets/css/main.css">
 </head>
 
 <body>
-<!-- =====================================================
-     Header Navigation
-     - 상단 고정 메뉴
-     - 각 섹션 id로 이동
-     ===================================================== -->
-<nav>
-  <div class="nav-inner">
-    <!-- 왼쪽 로고 -->
-    <a class="nav-logo" href="#about" aria-label="홈으로 이동">임대일</a>
+<header>
+  <nav aria-label="주요 메뉴">
+    <div class="nav-inner">
+      <a class="nav-logo" href="#about" aria-label="소개 영역으로 이동">
+        임대일
+      </a>
 
-    <!-- 중앙 메뉴 -->
-    <div class="nav-links" aria-label="주요 섹션 이동">
-      <a href="#about">소개</a>
-      <a href="#career">경력</a>
-      <a href="#projects">프로젝트</a>
-      <a href="#experience">트러블슈팅</a>
-      <a href="#stack">기술스택</a>
-      <a href="#certificates">자격증</a>
-      <a href="#activities">교육 / 활동</a>
-      <a href="#contact">연락처</a>
-    </div>
+      <div class="nav-links">
+        <a href="#about">소개</a>
+        <a href="#career">경력</a>
+        <a href="#projects">프로젝트</a>
+        <a href="#experience">기술 경험</a>
+        <a href="#stack">기술 스택</a>
+        <a href="#certificates">자격증</a>
+        <a href="#activities">활동</a>
+        <a href="#contact">연락처</a>
+      </div>
 
-    <!-- 오른쪽 다크모드 토글 -->
-    <div class="toggle-wrap">
-      <span class="toggle-icon" id="toggle-icon" aria-hidden="true">☀️</span>
-      <button class="theme-toggle" id="themeToggle" type="button" aria-label="다크모드 전환"></button>
+      <div class="toggle-wrap">
+        <span class="toggle-icon" id="toggle-icon" aria-hidden="true">☀️</span>
+
+        <button
+            class="theme-toggle"
+            id="themeToggle"
+            type="button"
+            aria-label="다크 모드로 전환"
+            aria-pressed="false"
+        ></button>
+      </div>
     </div>
-  </div>
-</nav>
+  </nav>
+</header>
 
 <main>
   <div class="container">
-    <!-- =====================================================
-         Hero / About
-         - 첫 화면
-         - 가장 중요한 자기소개 영역
-         ===================================================== -->
-    <section id="about" class="fade-up">
+
+    <!-- About -->
+    <section id="about" class="fade-up" aria-labelledby="about-title">
       <div class="hero-compact">
-        <!-- 상단: 왼쪽 기본 정보 + 오른쪽 프로필 -->
         <div class="hero-top">
           <div class="hero-info">
             <p class="hero-eyebrow">Backend Developer Portfolio</p>
 
-            <h1 class="hero-name">임대일</h1>
+            <h1 class="hero-name" id="about-title">임대일</h1>
 
-            <p class="hero-title">Java / Spring 기반 백엔드 개발자</p>
+            <p class="hero-title"># 백엔드 기반 개발자</p>
 
             <div class="hero-contact-line">
               <span>이메일</span>
-              <a href="mailto:limdaeil94@gmail.com">limdaeil94@gmail.com</a>
+              <a href="mailto:limdaeil94@gmail.com">
+                limdaeil94@gmail.com
+              </a>
             </div>
           </div>
 
@@ -83,189 +82,309 @@
                   class="hero-photo"
                   src="images/profile.jpg"
                   alt="임대일 프로필 사진"
+                  width="148"
+                  height="148"
                   onerror="this.parentElement.classList.add('is-empty')"
-              />
-              <div class="profile-placeholder">
+              >
+
+              <div class="profile-placeholder" aria-hidden="true">
                 <span>Profile</span>
                 <strong>images/profile.jpg</strong>
               </div>
             </div>
 
-            <div class="profile-icon-links">
-              <a href="https://github.com/limdaeil94" target="_blank" rel="noopener" aria-label="GitHub">
-                <span class="material-icons-round">account_tree</span>
+            <div class="profile-icon-links" aria-label="외부 링크 및 연락처">
+              <a
+                  href="https://github.com/LimdaeIl"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="GitHub 새 창에서 열기"
+                  title="GitHub"
+              >
+                <img
+                    src="images/github-logo.png"
+                    alt=""
+                    width="24"
+                    height="24"
+                >
               </a>
 
-              <a href="https://limdaeil94.tistory.com" target="_blank" rel="noopener" aria-label="Tistory Blog">
-                <span class="material-icons-round">title</span>
+              <a
+                  href="https://limdaeil94.tistory.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Tistory 블로그 새 창에서 열기"
+                  title="Tistory"
+              >
+                <img
+                    src="images/tistory-logo.png"
+                    alt=""
+                    width="24"
+                    height="24"
+                >
               </a>
 
-              <a href="tel:010-6366-6725" aria-label="Phone">
-                <span class="material-icons-round">call</span>
+              <a
+                  href="tel:010-6366-6725"
+                  aria-label="전화 걸기"
+                  title="전화"
+              >
+                <img
+                    src="images/phone-logo.png"
+                    alt=""
+                    width="24"
+                    height="24"
+                >
               </a>
 
-              <a href="mailto:limdaeil94@gmail.com" aria-label="Email">
-                <span class="material-icons-round">mail</span>
+              <a
+                  href="mailto:limdaeil94@gmail.com"
+                  aria-label="이메일 보내기"
+                  title="이메일"
+              >
+                <img
+                    src="images/naver-logo.png"
+                    alt=""
+                    width="24"
+                    height="24"
+                >
               </a>
             </div>
           </aside>
         </div>
 
-        <!-- 가로 구분선 -->
-        <div class="hero-divider"></div>
+        <div class="hero-divider" aria-hidden="true"></div>
 
-        <!-- 하단: 상세 자기소개 -->
         <div class="intro-tags">
           <p>
             <span>#문제해결</span>
-            운영 중 발생한 SIEM/PRTG 데이터 수집 실패, 재시도 부재, 비동기 과부하 문제를 분석하고 안정적인 수집 흐름으로 개선했습니다.
+            운영 중 발생한 데이터 수집 실패와 비동기 처리 문제를 분석하고,
+            안정적인 처리 흐름으로 개선한 경험이 있습니다.
           </p>
 
           <p>
             <span>#백엔드</span>
-            Java, Spring Boot, PostgreSQL, MySQL 기반으로 데이터 중심의 백엔드 기능을 구현합니다.
+            Java, Spring Boot, PostgreSQL, MySQL을 중심으로
+            데이터 기반 백엔드 기능을 구현합니다.
           </p>
 
           <p>
             <span>#운영개선</span>
-            데이터 정합성, 장애 재발 방지, 성능 개선을 고려하며 운영 가능한 구조를 지향합니다.
+            데이터 정합성, 장애 재발 방지, 성능을 함께 고려하며
+            운영 가능한 구조를 지향합니다.
           </p>
         </div>
       </div>
     </section>
 
-    <section id="career" class="fade-up">
+    <!-- Career -->
+    <section id="career" class="fade-up" aria-labelledby="career-title">
       <div class="section-header">
         <div>
           <span class="section-kicker">Career</span>
-          <h2 class="section-title">경력</h2>
+          <h2 class="section-title" id="career-title">경력</h2>
         </div>
       </div>
 
       <div class="career-list">
         <article class="career-item">
-          <div class="career-period">2026.02 ~ 2026.05</div>
+          <div class="career-period-wrap">
+            <time class="career-period" datetime="2026-02">
+              2026.02 ~ 2026.06
+            </time>
+
+            <span class="career-status">퇴사</span>
+          </div>
 
           <div class="career-content">
-            <h3 class="career-company">이츠인</h3>
-            <div class="career-meta">Dev Team</div>
+            <div class="career-heading">
+              <h3 class="career-company">이츠인</h3>
+              <div class="career-meta">Dev Team 매니저(사원)</div>
+            </div>
+
             <p class="career-desc">
-
-              Java, Spring Boot, PostgreSQL 기반의 백엔드 기능 개발과 운영 데이터 처리 업무를 수행했습니다.
-              FortiSIEM, PRTG 연동 환경에서 데이터 수집 실패, 비동기 처리, 마이그레이션, PDF 생성 성능 개선 등
-              운영 과정에서 발생한 문제를 분석하고 개선했습니다.
-
-
+              Fortinet SIEM·SOAR 솔루션 운영 및 유지보수를 담당했습니다.<br>
+              사내 그룹웨어 서비스 고도화와 데이터베이스 마이그레이션 업무를 수행했습니다.
             </p>
+
+            <h4 class="career-subtitle">담당 업무</h4>
+
+            <ul class="career-responsibilities">
+              <li>고객사 FortiSOAR Playbook, Connector, Dashboard 솔루션 운영 및 현장 유지보수</li>
+              <li>PRTG·FortiSIEM 기반 네트워크 및 방화벽 장비 데이터 수집과 월간 보고서 처리</li>
+              <li>사내 그룹웨어 백엔드 기능 개발 및 서비스 고도화</li>
+          </ul>
           </div>
         </article>
       </div>
     </section>
 
-    <!-- =====================================================
-         projects
-         - 프로젝트 경험
-         - 개인적으로 진행한 프로젝트나 회사에서 맡았던 주요 프로젝트를 간략히 소개
-         ===================================================== -->
-    <section id="projects" class="fade-up">
+    <!-- ############# Projects #################### -->
+    <section id="projects" class="fade-up" aria-labelledby="projects-title">
       <div class="section-header">
         <div>
           <span class="section-kicker">Projects</span>
-          <h2 class="section-title">프로젝트</h2>
+          <h2 class="section-title" id="projects-title">프로젝트</h2>
         </div>
+
+        <p class="section-desc">
+          실제 업무에서 수행한 주요 프로젝트와 담당 내용을 정리했습니다.
+        </p>
       </div>
 
       <div class="project-list">
+
+        <!-- SIEM -->
         <article class="project-item">
-          <h3 class="project-title">SIEM 데이터 수집 안정화 및 비동기 처리 개선</h3>
+          <h3 class="project-title">
+            한 번의 요청에 수만 건의 데이터 수집 안정화 및 비동기 처리 개선
+          </h3>
 
           <div class="project-meta">
             <span>이츠인</span>
-            <span class="project-meta-divider">|</span>
-            <span>2026.02 ~ 2026.05 (4개월)</span>
+            <span class="project-meta-divider" aria-hidden="true">|</span>
+            <time datetime="2026-02">
+              2026.02 ~ 2026.04 (3개월)
+            </time>
           </div>
 
           <h4 class="project-subtitle">Description</h4>
+
           <p class="project-desc">
-            FortiSIEM 기반 보고서 데이터 수집 과정에서 발생한 요청 실패, 재시도 부재, 비동기 과부하 문제를 분석하고
-            안정적인 수집 흐름으로 개선했습니다.
+            FortiSIEM·PRTG 기반의 방화벽 월간 보고서 데이터 수집 과정에서 발생하던 데이터 누락과 외부 시스템 과부하 문제를 분석하고, <br/>
+            조회 쿼리·재시도 정책·비동기 동시성 제어를 개선하여 데이터 수집 안정성과 정합성을 높였습니다.
           </p>
 
-          <h4 class="project-subtitle">Experience</h4>
-          <ul class="project-experience">
+          <h4 class="project-subtitle">Key Contributions</h4>
+
+          <ul class="project-contributions">
             <li>
-              SIEM/PRTG 데이터 수집 실패 원인을 분석하고 재시도 로직과 수집 흐름을 개선했습니다.
+              평균 부하 약 60%의 FortiSIEM 환경에서 조회·재시도 정책을 개선하여 데이터 누락 및 정합성 문제 해결
             </li>
             <li>
-              비동기 처리 구조와 작업 동시성을 조정하여 외부 시스템 부하를 줄이고 수집 안정성을 높였습니다.
+              PRTG 요청별 응답 시간을 계측하여 과도한 비동기 요청·재시도가 HTTP 429와 자원 부하를 유발하는 병목 식별
+            </li>
+            <li>
+              Exponential Backoff·Jitter 적용 및 동시성 최대 3개 제한으로 429와 자원 부하 알람 해소
+            </li>
+            <li>
+              월간 보고서 생성 시간을 평균 40분 → 15분으로 단축하여 처리시간 약 62.5% 개선
             </li>
           </ul>
 
           <h4 class="project-subtitle">Tech Stack</h4>
-          <div class="project-tags">
-            <span class="tag tag-spring">Spring Boot</span>
+
+          <div class="project-tags" aria-label="프로젝트 기술 스택">
+            <span class="tag tag-fastapi">FastAPI</span>
+            <span class="tag tag-react">React</span>
+            <span class="tag tag-nest">Nest.js</span>
+            <span class="tag tag-next">Next.js</span>
+            <span class="tag tag-typescript">TypeScript</span>
             <span class="tag tag-postgresql">PostgreSQL</span>
-            <span class="tag tag-redis">Redis</span>
             <span class="tag tag-fortisiem">FortiSIEM</span>
+            <span class="tag tag-redis">Redis</span>
             <span class="tag tag-bullmq">BullMQ</span>
+            <span class="tag tag-nginx">Nginx</span>
+            <span class="tag tag-proxmox">Proxmox</span>
+            <span class="tag tag-github">GitHub</span>
+          </div>
+
+          <div class="project-related">
+            <span class="project-related-label">Related Experience</span>
+
+            <a class="related-experience-link" href="posts/2026/siem-collection-optimization/">
+              방화벽 월간보고서 데이터 수집 안정화 및 성능 개선
+            </a>
           </div>
         </article>
+
+        <!-- Database Migration & JWT Enhancement -->
         <article class="project-item">
-          <h3 class="project-title">MySQL에서 PostgreSQL로 데이터 마이그레이션</h3>
+          <h3 class="project-title">
+            MySQL → PostgreSQL 데이터 마이그레이션 및 JWT 인증 고도화
+          </h3>
 
           <div class="project-meta">
             <span>이츠인</span>
-            <span class="project-meta-divider">|</span>
-            <span>2026.03 ~ 2026.05 (3개월)</span>
+            <span class="project-meta-divider" aria-hidden="true">|</span>
+            <time datetime="2026-02">
+              2026.02 ~ 2026.03 (2개월)
+            </time>
           </div>
 
           <h4 class="project-subtitle">Description</h4>
+
           <p class="project-desc">
-            기존 MySQL 기반 데이터를 PostgreSQL 구조에 맞게 이전하고, 테이블 관계와 타입 변환 오류를 점검하며
-            운영 데이터 정합성을 검증했습니다.
+            스키마와 테이블 관계가 불완전한 레거시 환경에서 MySQL 운영 데이터를 PostgreSQL로 안전하게 이관하고, <br/>
+            Access Token 단독으로 구성된 기존 인증 방식을 Refresh Token 기반의 인증 구조로 고도화한 프로젝트입니다.
           </p>
 
-          <h4 class="project-subtitle">Experience</h4>
-          <ul class="project-experience">
-            <li>
-              MySQL과 PostgreSQL 간 컬럼 타입 차이로 발생한 timestamp 변환 오류를 분석하고 수정했습니다.
+          <h4 class="project-subtitle">Key Contributions</h4>
+
+          <ul class="project-contributions">
+            <li> PK·FK·제약조건과 연관관계가 불완전한 26개 레거시 테이블을 분석하고,
+              데이터 의존관계와 이관 순서를 수립하여 MySQL 운영 데이터를 PostgreSQL로 마이그레이션
             </li>
-            <li>
-              고객, 장비, 보고서 관련 테이블의 참조 관계를 점검하며 마이그레이션 후 데이터 누락 여부를 확인했습니다.
+            <li> SELECT·JOIN 기반으로 테이블 간 실제 데이터 관계를 검증하고,
+              이관 전후 데이터 누락 및 참조 관계를 점검하여 데이터 정합성 확보
+            </li>
+            <li> Refresh Token 기반 인증 구조를 구현하고 Rotation·Blacklist·토큰 해시 저장·Secure Cookie를 적용하여,
+              로그인 유지 편의성을 개선하고 토큰 재사용 및 노출 위험 완화
             </li>
           </ul>
 
           <h4 class="project-subtitle">Tech Stack</h4>
-          <div class="project-tags">
-            <span class="tag tag-mysql">MySQL</span>
+
+          <div class="project-tags" aria-label="프로젝트 기술 스택">
+            <span class="tag tag-fastapi">FastAPI</span>
+            <span class="tag tag-react">React</span>
+            <span class="tag tag-nest">Nest.js</span>
+            <span class="tag tag-next">Next.js</span>
+            <span class="tag tag-typescript">TypeScript</span>
             <span class="tag tag-postgresql">PostgreSQL</span>
-            <span class="tag tag-spring">Spring Boot</span>
-            <span class="tag tag-github">Github</span>
+            <span class="tag tag-fortisiem">FortiSIEM</span>
+            <span class="tag tag-redis">Redis</span>
+            <span class="tag tag-bullmq">BullMQ</span>
+            <span class="tag tag-nginx">Nginx</span>
+            <span class="tag tag-proxmox">Proxmox</span>
+            <span class="tag tag-github">GitHub</span>
+          </div>
+
+          <div class="project-related">
+            <span class="project-related-label">Related Experience</span>
+
+            <a
+                class="related-experience-link"
+                href="posts/2026/postgres-timestamp-casting/"
+            >
+              레거시 데이터 마이그레이션 및 JWT 인증 구조 개선
+            </a>
           </div>
         </article>
-      </div>
-    </section>
 
-    <!-- =====================================================
-         experience
-         - 문제 해결 기록
-         - 이력서에서 강점으로 보일 수 있는 장애/개선 사례
-         ===================================================== -->
-    <section id="experience" class="fade-up">
+    <!-- Technical Experience -->
+    <section id="experience" class="fade-up" aria-labelledby="experience-title">
       <div class="section-header">
         <div>
           <span class="section-kicker">Experience</span>
-          <h2 class="section-title">기술 경험</h2>
+          <h2 class="section-title" id="experience-title">기술 경험</h2>
         </div>
+
+        <p class="section-desc">
+          구현과 운영 과정에서 마주한 문제와 해결 과정을 기술 주제별로 정리했습니다.
+        </p>
       </div>
 
       <div class="experience-group">
-        <h3 class="experience-category">신규 서비스 개발</h3>
+        <h3 class="experience-category">서비스 개발</h3>
 
         <div class="experience-list">
           <article class="experience-item">
-            <a class="experience-title" href="posts/2026/siem-collection-optimization/">
-              SIEM 데이터 수집 안정화 및 비동기 처리 개선
+            <a
+                class="experience-title"
+                href="posts/2026/siem-collection-optimization/"
+            >
+              방화벽 월간보고서 데이터 수집 안정화 및 성능 개선
             </a>
 
             <div class="experience-meta">
@@ -277,23 +396,15 @@
       </div>
 
       <div class="experience-group">
-        <h3 class="experience-category">시스템 엔지니어링</h3>
+        <h3 class="experience-category">데이터베이스</h3>
 
         <div class="experience-list">
           <article class="experience-item">
-            <a class="experience-title" href="posts/2026/postgres-timestamp-casting/">
+            <a
+                class="experience-title"
+                href="posts/2026/postgres-timestamp-casting/"
+            >
               PostgreSQL timestamp 타입 마이그레이션 오류 해결
-            </a>
-
-            <div class="experience-meta">
-              <span class="source-tag tag-itsin">이츠인</span>
-              <time datetime="2026-05">2026.05</time>
-            </div>
-          </article>
-
-          <article class="experience-item">
-            <a class="experience-title" href="posts/2026/prtg-report-data-parsing/">
-              PRTG/FortiSIEM 응답 데이터 파싱 이슈 분석
             </a>
 
             <div class="experience-meta">
@@ -309,7 +420,10 @@
 
         <div class="experience-list">
           <article class="experience-item">
-            <a class="experience-title" href="posts/2026/report-system-architecture/">
+            <a
+                class="experience-title"
+                href="posts/2026/report-system-architecture/"
+            >
               보고서 생성 시스템 요청 흐름 설계
             </a>
 
@@ -326,7 +440,10 @@
 
         <div class="experience-list">
           <article class="experience-item">
-            <a class="experience-title" href="posts/2026/report-collection-schedule-management/">
+            <a
+                class="experience-title"
+                href="posts/2026/report-collection-schedule-management/"
+            >
               보고서 수집 일정 및 작업 우선순위 관리
             </a>
 
@@ -339,21 +456,18 @@
       </div>
     </section>
 
-    <!-- =====================================================
-         Tech Stack
-         - 보유 기술
-         - hi 클래스는 강조하고 싶은 기술에 사용
-         ===================================================== -->
-    <section id="stack" class="fade-up">
+    <!-- Tech Stack -->
+    <section id="stack" class="fade-up" aria-labelledby="stack-title">
       <div class="section-header">
         <div>
           <span class="section-kicker">Tech Stack</span>
-          <h2 class="section-title">기술 스택</h2>
+          <h2 class="section-title" id="stack-title">기술 스택</h2>
         </div>
       </div>
 
       <div class="stack-group">
         <div class="stack-group-label">Language</div>
+
         <div class="stack-badges">
           <span class="badge hi">Java</span>
           <span class="badge">JavaScript</span>
@@ -364,6 +478,7 @@
 
       <div class="stack-group">
         <div class="stack-group-label">Framework</div>
+
         <div class="stack-badges">
           <span class="badge hi">Spring Boot</span>
           <span class="badge">FastAPI</span>
@@ -375,6 +490,7 @@
 
       <div class="stack-group">
         <div class="stack-group-label">Database</div>
+
         <div class="stack-badges">
           <span class="badge hi">PostgreSQL</span>
           <span class="badge hi">MySQL</span>
@@ -384,6 +500,7 @@
 
       <div class="stack-group">
         <div class="stack-group-label">Messaging</div>
+
         <div class="stack-badges">
           <span class="badge">RabbitMQ</span>
           <span class="badge">BullMQ</span>
@@ -392,6 +509,7 @@
 
       <div class="stack-group">
         <div class="stack-group-label">Infrastructure / DevOps</div>
+
         <div class="stack-badges">
           <span class="badge">Linux</span>
           <span class="badge">Docker</span>
@@ -403,6 +521,7 @@
 
       <div class="stack-group">
         <div class="stack-group-label">Collaboration</div>
+
         <div class="stack-badges">
           <span class="badge">Git</span>
           <span class="badge">GitHub</span>
@@ -411,46 +530,39 @@
         </div>
       </div>
     </section>
-    <!-- =====================================================
-         certificates
-         - 자격증
-         ===================================================== -->
-    <section id="certificates" class="fade-up">
+
+    <!-- Certificates -->
+    <section
+        id="certificates"
+        class="fade-up"
+        aria-labelledby="certificates-title"
+    >
       <div class="section-header">
         <div>
           <span class="section-kicker">Certificates</span>
-          <h2 class="section-title">자격증</h2>
+          <h2 class="section-title" id="certificates-title">자격증</h2>
         </div>
       </div>
 
       <div class="certificate-list">
         <article class="certificate-item">
           <h3 class="certificate-title">정보처리기사</h3>
+
           <div class="certificate-meta">
             <span>한국산업인력공단</span>
-            <span class="certificate-meta-divider">|</span>
-            <span>2026.00</span>
-          </div>
-        </article>
-        <article class="certificate-item">
-          <h3 class="certificate-title">정보처리기사</h3>
-          <div class="certificate-meta">
-            <span>한국산업인력공단</span>
-            <span class="certificate-meta-divider">|</span>
-            <span>2026.00</span>
+            <span class="certificate-meta-divider" aria-hidden="true">|</span>
+            <time datetime="2026">2026</time>
           </div>
         </article>
       </div>
     </section>
-    <!-- =====================================================
-         Contact
-         - 마지막 연락처 카드
-         ===================================================== -->
-    <section id="activities" class="fade-up">
+
+    <!-- Activities -->
+    <section id="activities" class="fade-up" aria-labelledby="activities-title">
       <div class="section-header">
         <div>
           <span class="section-kicker">Activities</span>
-          <h2 class="section-title">활동</h2>
+          <h2 class="section-title" id="activities-title">활동</h2>
         </div>
       </div>
 
@@ -460,31 +572,37 @@
 
           <div class="activity-meta">
             <span>개인</span>
-            <span class="activity-meta-divider">|</span>
-            <span>2026.02 ~ 현재</span>
+            <span class="activity-meta-divider" aria-hidden="true">|</span>
+            <time datetime="2026-02">2026.02 ~ 현재</time>
           </div>
 
           <p class="activity-desc">
-            백엔드 개발, 데이터베이스, 운영 장애 분석, 트러블슈팅 과정을 정리하며 학습 내용을 기록하고 있습니다. <br><br>
-            <a href="https://limdaeil94.tistory.com" target="_blank" rel="noopener">블로그 바로가기</a>
+            백엔드 개발, 데이터베이스, 운영 장애 분석과 트러블슈팅 과정을
+            정리하며 학습 및 문제 해결 경험을 기록하고 있습니다.
           </p>
+
+          <a
+              class="card-link"
+              href="https://limdaeil94.tistory.com"
+              target="_blank"
+              rel="noopener noreferrer"
+          >
+            블로그 바로가기
+          </a>
         </article>
       </div>
     </section>
 
-
-    <!-- =====================================================
-         Contact
-         - 마지막 연락처 카드
-         ===================================================== -->
-    <section id="contact" class="fade-up">
+    <!-- Contact -->
+    <section id="contact" class="fade-up" aria-labelledby="contact-title">
       <div class="section-header">
         <div>
           <span class="section-kicker">Contact</span>
-          <h2 class="section-title">연락처</h2>
+          <h2 class="section-title" id="contact-title">연락처</h2>
         </div>
+
         <p class="section-desc">
-          포트폴리오와 프로젝트 기록은 계속 업데이트할 예정입니다.
+          포트폴리오와 기술 기록은 지속적으로 업데이트하고 있습니다.
         </p>
       </div>
 
@@ -492,21 +610,25 @@
         <div class="card-header">
           <h3 class="card-title">임대일</h3>
         </div>
+
         <p class="card-desc">
-          백엔드 개발자로서 운영 가능한 구조, 데이터 정합성, 장애 재발 방지, 성능 개선에 관심이 있습니다.
+          운영 가능한 구조, 데이터 정합성, 장애 재발 방지와 성능 개선을
+          고민하는 백엔드 개발자입니다.
         </p>
-        <a class="card-link" href="mailto:limdaeil94@gmail.com">limdaeil94@gmail.com</a>
+
+        <a class="card-link" href="mailto:limdaeil94@gmail.com">
+          limdaeil94@gmail.com
+        </a>
       </div>
     </section>
+
   </div>
 </main>
 
-<!-- Footer -->
 <footer>
-  © 2026 Lim Daeil. Built with HTML, CSS, JavaScript and GitHub Pages.
+  <p>© 2026 Lim Daeil. Built with HTML, CSS, JavaScript and GitHub Pages.</p>
 </footer>
 
-<!-- 공통 스크립트: 다크모드, fade-up, active nav -->
 <script src="assets/js/main.js"></script>
 </body>
 </html>

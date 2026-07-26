@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="ko" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>방화벽 월간보고서 데이터 수집 안정화 및 성능 개선 — 임대일</title>
+  <meta
+      name="description"
+      content="FortiSIEM·PRTG 기반 월간보고서 데이터 수집 과정에서 데이터 정합성, 재시도, 비동기 동시성 문제를 분석하고 개선한 경험입니다."
+  >
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=Montserrat:wght@600;700;800;900&family=Roboto:wght@400;500;700;900&display=swap"
+  >
+
+  <link rel="stylesheet" href="../../../assets/css/main.css">
+  <link rel="stylesheet" href="../../../assets/css/post.css">
+</head>
+
+<body class="post-page">
+<div class="post-topbar">
+  <div class="post-topbar-inner">
+    <a class="post-brand" href="../../../index.html">임대일.dev</a>
+    <a class="post-back-link" href="../../../index.html#experience">Portfolio로 돌아가기</a>
+  </div>
+</div>
+
+<main class="post-main">
+  <article class="post-container">
+    <header class="post-hero">
+      <div class="post-breadcrumb">
+        <span>Technical Experience</span>
+        <span aria-hidden="true">/</span>
+        <span>Backend · Troubleshooting</span>
+      </div>
+
+      <h1 class="post-title">
+        방화벽 월간보고서 데이터 수집<br class="desktop-only">
+        안정화 및 성능 개선
+      </h1>
+
+      <p class="post-lead">
+        FortiSIEM·PRTG 기반 월간보고서 데이터 수집 과정에서 발생하던
+        데이터 누락, 과도한 재시도, 외부 시스템 부하 문제를 분석하고
+        조회 로직과 요청 정책, 비동기 동시성을 개선했습니다.
+      </p>
+
+      <div class="post-meta">
+        <span>이츠인</span>
+        <span aria-hidden="true">·</span>
+        <span>Dev Team / Mananger(사원)</span>
+        <span aria-hidden="true">·</span>
+        <time datetime="2026">2026</time>
+      </div>
+
+      <div class="post-tags" aria-label="사용 기술">
+        <span class="tag tag-fastapi">FastAPI</span>
+        <span class="tag tag-react">React</span>
+        <span class="tag tag-nest">Nest.js</span>
+        <span class="tag tag-next">Next.js</span>
+        <span class="tag tag-typescript">TypeScript</span>
+        <span class="tag tag-postgresql">PostgreSQL</span>
+        <span class="tag tag-fortisiem">FortiSIEM</span>
+        <span class="tag tag-redis">Redis</span>
+        <span class="tag tag-bullmq">BullMQ</span>
+        <span class="tag tag-nginx">Nginx</span>
+        <span class="tag tag-proxmox">Proxmox</span>
+        <span class="tag tag-github">GitHub</span>
+      </div>
+    </header>
+
+    <section class="post-section" aria-labelledby="overview-title">
+      <div class="post-section-heading">
+        <span class="post-section-number">01</span>
+        <div>
+          <p class="post-section-kicker">Overview</p>
+          <h2 id="overview-title">빠르게 요청하는 것보다 안정적으로 끝내는 것이 중요했습니다.</h2>
+        </div>
+      </div>
+
+      <div class="post-copy">
+        <p>
+          월간보고서에 필요한 데이터는 FortiSIEM과 PRTG에서 서로 다른 방식으로
+          수집되고 있었습니다. FortiSIEM 데이터는 매일 새벽 02시에 미리 수집하고,
+          PRTG 데이터는 사용자가 월간보고서 PDF 생성을 요청하는 시점에 실시간으로 조회했습니다.
+        </p>
+        <p>
+          문제는 두 외부 시스템 모두 이미 높은 부하를 받고 있는 상황에서,
+          기존 애플리케이션이 응답 특성과 처리 용량을 충분히 고려하지 않고 요청하고 있었다는 점입니다.
+          그 결과 일부 데이터가 누락되고, 재시도가 오히려 외부 시스템의 부하를 키우는 문제가 반복됐습니다.
+        </p>
+      </div>
+
+      <div class="metric-grid">
+        <div class="metric-card">
+          <strong>약 220GB / day</strong>
+          <span>IDC 이관 중 FortiSIEM의 <br/> 매일 처리하던 로그 데이터 양</span>
+        </div>
+        <div class="metric-card">
+          <strong>SIEM 부하 60%</strong>
+          <span>FortiSIEM 지속적인 평균 부하</span>
+        </div>
+        <div class="metric-card">
+          <strong>PRTG 부하 40%</strong>
+          <span>PRTG 기존 평균 부하</span>
+        </div>
+        <div class="metric-card metric-card-highlight">
+          <strong>40분 → 15분</strong>
+          <span>PRTG 개선 후 월간보고서 평균 생성 시간을 63% 감소</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="post-section" aria-labelledby="flow-title">
+      <div class="post-section-heading">
+        <span class="post-section-number">02</span>
+        <div>
+          <p class="post-section-kicker">System Flow</p>
+          <h2 id="flow-title">보고서 데이터 수집 흐름</h2>
+        </div>
+      </div>
+
+      <div class="architecture">
+        <div class="architecture-row architecture-row-top">
+          <div class="architecture-node">
+            <strong>Groupware</strong>
+            <span>Next.js</span>
+          </div>
+          <div class="architecture-arrow">→</div>
+          <div class="architecture-node">
+            <strong>API Server</strong>
+            <span>FastAPI Backend</span>
+          </div>
+          <div class="architecture-arrow">→</div>
+          <div class="architecture-node architecture-node-accent">
+            <strong>Report WAS</strong>
+            <span>NestJS</span>
+          </div>
+        </div>
+
+        <div class="architecture-branch" aria-hidden="true">↓</div>
+
+        <div class="architecture-row architecture-row-bottom">
+          <div class="architecture-node">
+            <strong>Database</strong>
+            <span>Report Data</span>
+          </div>
+          <div class="architecture-node">
+            <strong>Redis</strong>
+            <span>Queue</span>
+          </div>
+          <div class="architecture-node">
+            <strong>S3</strong>
+            <span>PDF Files</span>
+          </div>
+        </div>
+
+        <div class="architecture-sources">
+          <div>
+            <strong>FortiSIEM</strong>
+            <span>매일 새벽 02:00 사전 수집</span>
+          </div>
+          <div>
+            <strong>PRTG</strong>
+            <span>PDF 생성 시점에 실시간 수집</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="post-note">
+        <strong>핵심 차이</strong>
+        <p>
+          SIEM 데이터는 업무 시간 이전에 사전 수집되므로 처리시간보다 안정성을 우선할 수 있었고, <br/>
+          PRTG 데이터는 PDF 생성 응답시간과 직접 연결되므로 안정성과 처리시간을 함께 개선해야 했습니다.
+        </p>
+      </div>
+    </section>
+
+    <section class="post-section" aria-labelledby="problem-title">
+      <div class="post-section-heading">
+        <span class="post-section-number">03</span>
+        <div>
+          <p class="post-section-kicker">Problem</p>
+          <h2 id="problem-title">문제는 네트워크가 아니라 수집 방식 자체에 있었습니다.</h2>
+        </div>
+      </div>
+
+      <div class="problem-grid">
+        <article class="problem-card">
+          <span class="problem-label">FortiSIEM</span>
+          <h3>수집은 완료되지만 데이터가 맞지 않았습니다.</h3>
+          <ul>
+            <li>국가 코드와 조회 쿼리 조건의 정합성 문제</li>
+            <li>높은 시스템 부하를 고려하지 않은 짧은 요청 간격</li>
+            <li>3회 재시도 소진 후 일부 데이터 누락 가능성</li>
+            <li>수집 상태를 확인할 별도 모니터링 없이 .txt 로그에 의존</li>
+          </ul>
+        </article>
+
+        <article class="problem-card">
+          <span class="problem-label">PRTG</span>
+          <h3>빠른 비동기 요청이 오히려 전체 처리를 느리게 했습니다.</h3>
+          <ul>
+            <li>일부 방화벽 인터페이스 설정 누락</li>
+            <li>인터페이스별 800~2,000개 이상의 월간 데이터 응답</li>
+            <li>응답 지연을 실패처럼 취급하며 무분별한 재시도 발생</li>
+            <li>HTTP 429와 자원 부하 알람이 반복적으로 발생</li>
+          </ul>
+        </article>
+      </div>
+
+      <blockquote class="post-quote">
+        “응답이 느리다”와 “요청이 실패했다”를 동일한 문제로 취급하면, 재시도가 오히려 성능 저하를 유발하고, 장애를 증폭시킬 수 있었습니다.
+      </blockquote>
+    </section>
+
+    <section class="post-section" aria-labelledby="siem-title">
+      <div class="post-section-heading">
+        <span class="post-section-number">04</span>
+        <div>
+          <p class="post-section-kicker">FortiSIEM</p>
+          <h2 id="siem-title">속도를 늦추고 데이터 정합성과 완료 가능성을 높였습니다.</h2>
+        </div>
+      </div>
+
+      <div class="change-list">
+        <article class="change-item">
+          <span class="change-index">01</span>
+          <div>
+            <h3>조회 쿼리와 국가 코드 정합성 수정</h3>
+            <p>
+              실제 보고서 데이터와 수집 결과가 일치하지 않는 지점을 추적해 국가 코드 처리와 FortiSIEM 조회 조건을 수정했습니다. <br/>
+              재시도 정책을 바꾸기 전에 잘못된 조회 자체가 발생하지 않도록 정리했습니다.
+            </p>
+          </div>
+        </article>
+
+        <article class="change-item">
+          <span class="change-index">02</span>
+          <div>
+            <h3>요청 간격 확대</h3>
+            <p>
+              FortiSIEM이 IDC 이관으로 높은 부하를 지속적으로 받고 있다는 점을 고려해 요청 사이의 간격을 늘렸습니다. <br/>
+              처리량을 최대화하기보다 외부 시스템이 안정적으로 응답할 수 있는 수준으로 요청 속도를 낮췄습니다.
+            </p>
+          </div>
+        </article>
+
+        <article class="change-item">
+          <span class="change-index">03</span>
+          <div>
+            <h3>재시도 3회 → 5회</h3>
+            <p>
+              일시적인 응답 지연으로 수집 작업 전체가 실패하지 않도록 재시도 횟수를 늘렸습니다. <br/>
+              단순히 횟수만 늘리는 대신 요청 간격도 함께 조정해 추가 부하를 최소화했습니다.
+            </p>
+          </div>
+        </article>
+      </div>
+
+      <div class="tradeoff-card">
+        <div>
+          <span>Before</span>
+          <strong>평균 약 2시간</strong>
+          <p>더 빠르지만 일부 데이터 누락 가능성이 존재</p>
+        </div>
+        <div class="tradeoff-arrow" aria-hidden="true">→</div>
+        <div>
+          <span>After</span>
+          <strong>평균 3시간 30분+</strong>
+          <p>업무 시간 이전 완료 + 데이터 정합성 및 안정성 확보</p>
+        </div>
+      </div>
+
+      <p class="post-caption">
+        💡새벽 02시에 시작하는 배치 특성상 데이터 수집 실행 시간의 증가로 인해 업무에 영향을 주지 않았기 때문에, 처리속도보다 데이터 정합성과 외부 시스템 안정성을 우선했습니다.
+      </p>
+    </section>
+
+    <section class="post-section" aria-labelledby="prtg-title">
+      <div class="post-section-heading">
+        <span class="post-section-number">05</span>
+        <div>
+          <p class="post-section-kicker">PRTG</p>
+          <h2 id="prtg-title">무분별한 병렬 처리 대신 제한된 동시성을 선택했습니다.</h2>
+        </div>
+      </div>
+
+      <div class="post-copy">
+        <p>
+          PRTG 문제를 조사하면서 먼저 일부 인터페이스 설정이 누락되어
+          필요한 데이터 자체가 조회되지 않는 상태를 확인하고 설정을 정비했습니다.
+          이후 요청별 소요 시간을 로그로 남겨 실제 응답 특성을 확인했습니다.
+        </p>
+        <p>
+          인터페이스에 따라 응답에 수 초에서 수십 초가 걸렸고,
+          기존 로직은 이 대기 시간을 충분히 고려하지 않은 채 새로운 요청과 재시도를 계속 발생시키고 있었습니다.
+          결과적으로 비동기 처리의 병렬성이 PRTG가 감당할 수 있는 수준을 넘어가면서
+          HTTP 429와 자원 부하 알람으로 이어졌습니다.
+        </p>
+      </div>
+
+      <div class="before-after">
+        <div class="before-after-column">
+          <span class="before-after-label">Before</span>
+          <ol>
+            <li>다수 인터페이스에 동시에 요청</li>
+            <li>응답 지연</li>
+            <li>추가 재시도</li>
+            <li>PRTG 부하 증가</li>
+            <li>429 / 응답 실패</li>
+            <li>다시 재시도</li>
+          </ol>
+        </div>
+
+        <div class="before-after-divider" aria-hidden="true">→</div>
+
+        <div class="before-after-column before-after-column-after">
+          <span class="before-after-label">After</span>
+          <ol>
+            <li>동시 요청 최대 3개로 제한</li>
+            <li>응답 완료 후 다음 작업 처리</li>
+            <li>Exponential Backoff 적용</li>
+            <li>Jitter로 재시도 시점 분산</li>
+            <li>불필요한 요청 감소</li>
+            <li>안정적인 데이터 수집</li>
+          </ol>
+        </div>
+      </div>
+
+      <div class="post-note post-note-accent">
+        <strong>Bounded Concurrency</strong>
+        <p>
+          비동기 처리를 제거한 것이 아니라, 동시에 처리할 인터페이스를 최대 3개로 제한했습니다. </br>
+          병렬성은 유지하면서 외부 시스템이 감당할 수 있는 범위 안에서 처리량을 제어했습니다.
+        </p>
+      </div>
+    </section>
+
+    <section class="post-section post-section-result" aria-labelledby="result-title">
+      <div class="post-section-heading">
+        <span class="post-section-number">06</span>
+        <div>
+          <p class="post-section-kicker">Result</p>
+          <h2 id="result-title">불필요한 요청을 없애고 안정성과 처리시간을 개선했습니다.</h2>
+        </div>
+      </div>
+
+      <div class="result-grid">
+        <article class="result-card">
+          <span>FortiSIEM</span>
+          <strong>데이터 정합성 개선</strong>
+          <p>조회 쿼리와 국가 코드 수정으로 잘못된 조건에 의한 데이터 누락을 개선했습니다.</p>
+        </article>
+
+        <article class="result-card">
+          <span>PRTG</span>
+          <strong>부하 알람 해소</strong>
+          <p>과도한 요청과 재시도를 줄여 월간보고서 생성 시 발생하던 자원 부하 알람을 제거했습니다.</p>
+        </article>
+
+        <article class="result-card result-card-primary">
+          <span>Report</span>
+          <strong>약 62.5% 단축</strong>
+          <p>월간보고서 평균 생성 시간을 약 40분에서 15분으로 단축했습니다.</p>
+        </article>
+      </div>
+
+      <div class="decision-box">
+        <p class="decision-label">What I learned</p>
+        <h3>
+          외부 시스템 연동에서 “더 많은 병렬 요청”이 항상 더 높은 성능을 의미하지는 않습니다.
+        </h3>
+        <p>
+          시스템의 응답 특성과 처리 용량을 확인하지 않은 비동기 처리와 재시도는 장애를 스스로 증폭시킬 수 있습니다. <br>
+          이번 개선에서는 요청별 응답 시간을 직접 계측하고, 시스템별 업무 특성을 기준으로 서로 다른 전략을 적용했습니다.
+        </p>
+        <ul>
+          <li><b>FortiSIEM</b>: 처리속도보다 정합성과 안정성을 우선</li>
+          <li><b>PRTG</b>: 동시성 제한과 재시도 정책 개선으로 안정성과 성능을 동시에 확보</li>
+          <li>운영 문제를 단순 네트워크 장애로 결론내리지 않고 데이터와 로그로 원인을 검증</li>
+        </ul>
+      </div>
+    </section>
+
+    <footer class="post-footer">
+      <a class="post-footer-link" href="../../../index.html#experience">
+        ← 기술 경험 목록으로 돌아가기
+      </a>
+      <p>© 2026 Lim Daeil</p>
+    </footer>
+  </article>
+</main>
+</body>
+</html>
+

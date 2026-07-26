@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="ko" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>레거시 데이터 마이그레이션 및 JWT 인증 구조 개선 — 임대일</title>
+
+  <meta
+      name="description"
+      content="PK·FK·제약조건이 불완전한 26개 레거시 테이블의 데이터 관계를 분석하여 MySQL 운영 데이터를 PostgreSQL로 마이그레이션하고, Access Token 단독 인증을 Refresh Token 기반 구조로 개선한 경험입니다."
+  >
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+  <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=Montserrat:wght@600;700;800;900&family=Roboto:wght@400;500;700;900&display=swap"
+  >
+
+  <link rel="stylesheet" href="../../../assets/css/main.css">
+  <link rel="stylesheet" href="../../../assets/css/post.css">
+</head>
+
+<body class="post-page">
+
+<div class="post-topbar">
+  <div class="post-topbar-inner">
+    <a class="post-brand" href="../../../index.html">
+      임대일.dev
+    </a>
+
+    <a class="post-back-link" href="../../../index.html#experience">
+      Portfolio로 돌아가기
+    </a>
+  </div>
+</div>
+
+
+<main class="post-main">
+  <article class="post-container">
+
+    <!-- =====================================================
+         Hero
+         ===================================================== -->
+    <header class="post-hero">
+
+      <div class="post-breadcrumb">
+        <span>Technical Experience</span>
+        <span aria-hidden="true">/</span>
+        <span>Database · Authentication</span>
+      </div>
+
+      <h1 class="post-title">
+        레거시 데이터 마이그레이션 및<br class="desktop-only">
+        JWT 인증 구조 개선
+      </h1>
+
+      <p class="post-lead">
+        스키마 변경이 어려운 레거시 환경에서 26개 테이블의 실제 데이터 관계를
+        직접 분석하여 MySQL 운영 데이터를 PostgreSQL로 이관하고,
+        Access Token 단독으로 구성되어 있던 인증 방식을
+        Refresh Token 기반의 인증 구조로 개선했습니다.
+      </p>
+
+      <div class="post-meta">
+        <span>이츠인</span>
+        <span aria-hidden="true">·</span>
+        <span>Backend / Database / Authentication</span>
+        <span aria-hidden="true">·</span>
+        <time datetime="2026-02">
+          2026.02 ~ 2026.03
+        </time>
+      </div>
+
+      <div class="post-tags" aria-label="사용 기술">
+        <span class="tag tag-fastapi">FastAPI</span>
+        <span class="tag tag-react">React</span>
+        <span class="tag tag-typescript">TypeScript</span>
+        <span class="tag tag-mysql">MySQL</span>
+        <span class="tag tag-postgresql">PostgreSQL</span>
+        <span class="tag tag-redis">Redis</span>
+      </div>
+
+    </header>
+
+
+    <!-- =====================================================
+         01. Overview
+         ===================================================== -->
+    <section class="post-section" aria-labelledby="overview-title">
+
+      <div class="post-section-heading">
+        <span class="post-section-number">01</span>
+
+        <div>
+          <p class="post-section-kicker">Overview</p>
+
+          <h2 id="overview-title">
+            새로 설계하는 것보다 기존 구조를 이해하고 안전하게 변경하는 것이 더 어려웠습니다.
+          </h2>
+        </div>
+      </div>
+
+
+      <div class="post-copy">
+        <p>
+          기존 그룹웨어 서비스의 운영 데이터를 MySQL에서 PostgreSQL로
+          이전해야 했습니다. 일반적인 데이터베이스 마이그레이션과 달리,
+          이관 대상 PostgreSQL에는 이미 애플리케이션 구현이 완료된 테이블이 존재했고
+          실제 기능 역시 해당 스키마를 기준으로 동작하고 있었습니다.
+        </p>
+
+        <p>
+          하지만 데이터베이스를 분석하면서 기본 키가 존재하지 않는 테이블,
+          올바르지 않은 외래 키, 불완전한 제약조건과 연관관계 등
+          여러 구조적 문제를 확인했습니다.
+          이미 구현된 SQLAlchemy 모델과 서비스 코드가 기존 구조에 의존하고 있어
+          스키마 자체를 대규모로 수정하는 것도 위험한 상황이었습니다.
+        </p>
+
+        <p>
+          동시에 인증 영역에서는 Access Token만 발급하는 구조로 인해
+          토큰이 만료될 때마다 로그인이 종료되고,
+          클라이언트에서 토큰이 그대로 노출되는 문제도 존재했습니다.
+          따라서 데이터 마이그레이션과 함께 기존 인증 구조도 개선했습니다.
+        </p>
+      </div>
+
+
+      <div class="metric-grid">
+
+        <div class="metric-card">
+          <strong>26 Tables</strong>
+          <span>직접 관계와 데이터 의존성을 분석한 레거시 테이블</span>
+        </div>
+
+        <div class="metric-card">
+          <strong>2 Weeks+</strong>
+          <span>테이블 분석 및 데이터 이관 계획 수립에 소요된 기간</span>
+        </div>
+
+        <div class="metric-card">
+          <strong>30 min</strong>
+          <span>기존 Access Token 만료로 로그인이 종료되던 주기</span>
+        </div>
+
+        <div class="metric-card metric-card-highlight">
+          <strong>10 min</strong>
+          <span>개선 후 Access Token 유효시간</span>
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         02. Constraints
+         ===================================================== -->
+    <section class="post-section" aria-labelledby="constraints-title">
+
+      <div class="post-section-heading">
+        <span class="post-section-number">02</span>
+
+        <div>
+          <p class="post-section-kicker">Constraints</p>
+
+          <h2 id="constraints-title">
+            문제를 발견했다고 해서 스키마를 자유롭게 수정할 수 있는 환경은 아니었습니다.
+          </h2>
+        </div>
+      </div>
+
+
+      <div class="problem-grid">
+
+        <article class="problem-card">
+          <span class="problem-label">Database</span>
+
+          <h3>
+            데이터베이스 구조와 실제 데이터 관계가 일치하지 않았습니다.
+          </h3>
+
+          <ul>
+            <li>일부 테이블에 명확한 Primary Key가 존재하지 않음</li>
+            <li>Foreign Key와 실제 데이터 참조 관계가 일치하지 않음</li>
+            <li>제약조건만으로 테이블 관계를 신뢰하기 어려운 상태</li>
+            <li>26개 테이블의 데이터 의존관계를 별도로 파악해야 함</li>
+          </ul>
+        </article>
+
+
+        <article class="problem-card">
+          <span class="problem-label">Application</span>
+
+          <h3>
+            이미 구현된 애플리케이션이 기존 스키마에 강하게 의존하고 있었습니다.
+          </h3>
+
+          <ul>
+            <li>SQLAlchemy 모델이 기존 PostgreSQL 스키마를 기준으로 구현됨</li>
+            <li>스키마 변경 시 기존 서비스 코드까지 영향을 받을 가능성 존재</li>
+            <li>Alembic migration history가 정상적으로 관리되지 않는 상태</li>
+            <li>대규모 스키마 수정은 일정과 안정성 측면에서 위험도가 높음</li>
+          </ul>
+        </article>
+
+      </div>
+
+
+      <blockquote class="post-quote">
+        데이터베이스를 이상적인 형태로 다시 설계하는 것보다,
+        현재 동작하는 시스템을 깨뜨리지 않으면서 데이터를 정확하게 옮기는 것을 우선했습니다.
+      </blockquote>
+
+    </section>
+
+
+    <!-- =====================================================
+         03. Schema Analysis
+         ===================================================== -->
+    <section class="post-section" aria-labelledby="analysis-title">
+
+      <div class="post-section-heading">
+        <span class="post-section-number">03</span>
+
+        <div>
+          <p class="post-section-kicker">Schema Analysis</p>
+
+          <h2 id="analysis-title">
+            제약조건이 아니라 실제 데이터를 기준으로 26개 테이블의 관계를 다시 추적했습니다.
+          </h2>
+        </div>
+      </div>
+
+
+      <div class="post-copy">
+        <p>
+          PK·FK 정보만으로는 테이블의 실제 연관관계를 판단하기 어려웠기 때문에
+          각 테이블을 직접 SELECT하여 데이터 형태와 참조 값을 확인했습니다.
+          이후 관련 테이블을 JOIN하면서 어떤 컬럼이 실제 식별자 역할을 하고,
+          어떤 순서로 데이터가 연결되는지 역으로 분석했습니다.
+        </p>
+
+        <p>
+          특히 단순히 전체 데이터를 INSERT하는 방식은 사용하지 않았습니다.
+          부모 데이터와 자식 데이터의 연결이 올바른지,
+          기존 MySQL의 데이터 관계가 PostgreSQL에서도 동일하게 유지되는지를
+          확인하면서 테이블별 이관 방법을 결정했습니다.
+        </p>
+      </div>
+
+
+      <div class="change-list">
+
+        <article class="change-item">
+          <span class="change-index">01</span>
+
+          <div>
+            <h3>테이블 구조 및 데이터 조사</h3>
+
+            <p>
+              26개 테이블의 컬럼, PK·FK, NULL 허용 여부와 제약조건을 확인하고
+              실제 저장된 데이터를 조회하여 스키마 정의와 데이터 관계가
+              일치하는지 비교했습니다.
+            </p>
+          </div>
+        </article>
+
+
+        <article class="change-item">
+          <span class="change-index">02</span>
+
+          <div>
+            <h3>SELECT · JOIN 기반 관계 검증</h3>
+
+            <p>
+              제약조건을 신뢰하기 어려운 테이블은 실제 식별 값을 기준으로 JOIN하여
+              데이터 간 연결 관계를 확인하고, 누락되거나 잘못 연결된 데이터를
+              이관 전에 식별했습니다.
+            </p>
+          </div>
+        </article>
+
+
+        <article class="change-item">
+          <span class="change-index">03</span>
+
+          <div>
+            <h3>데이터 의존관계 및 이관 순서 수립</h3>
+
+            <p>
+              참조 대상이 되는 데이터가 먼저 존재해야 하는 관계를 기준으로
+              테이블 간 의존성을 정리하고, 데이터 삽입 순서를 수립했습니다.
+            </p>
+          </div>
+        </article>
+
+      </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         04. Migration Strategy
+         ===================================================== -->
+    <section class="post-section" aria-labelledby="migration-title">
+
+      <div class="post-section-heading">
+        <span class="post-section-number">04</span>
+
+        <div>
+          <p class="post-section-kicker">Migration Strategy</p>
+
+          <h2 id="migration-title">
+            마이그레이션의 기준을 “INSERT 성공”이 아니라 “관계가 유지되는가”로 잡았습니다.
+          </h2>
+        </div>
+      </div>
+
+
+      <div class="before-after">
+
+        <div class="before-after-column">
+          <span class="before-after-label">Risk</span>
+
+          <ol>
+            <li>MySQL 원본 데이터 조회</li>
+            <li>단순 테이블 단위 INSERT</li>
+            <li>잘못된 참조 관계까지 그대로 이관</li>
+            <li>애플리케이션 실행 시점에 문제 발견</li>
+          </ol>
+        </div>
+
+
+        <div class="before-after-divider" aria-hidden="true">
+          →
+        </div>
+
+
+        <div class="before-after-column before-after-column-after">
+          <span class="before-after-label">Applied</span>
+
+          <ol>
+            <li>MySQL 원본 데이터 분석</li>
+            <li>SELECT · JOIN으로 관계 사전 검증</li>
+            <li>의존관계에 따라 순차적으로 데이터 이관</li>
+            <li>PostgreSQL에서 다시 JOIN하여 결과 검증</li>
+          </ol>
+        </div>
+
+      </div>
+
+
+      <div class="post-note post-note-accent">
+        <strong>Validation First</strong>
+
+        <p>
+          마이그레이션 쿼리가 정상 종료됐다는 사실만으로 성공을 판단하지 않았습니다.
+          이관 전후의 레코드와 참조 관계를 비교하고,
+          PostgreSQL에서도 동일한 JOIN 결과가 만들어지는지를 확인하여
+          데이터 정합성을 검증했습니다.
+        </p>
+      </div>
+
+
+      <div class="tradeoff-card">
+
+        <div>
+          <span>Option A</span>
+          <strong>기존 스키마 재설계</strong>
+
+          <p>
+            구조적으로는 이상적이지만 기존 SQLAlchemy 모델과 서비스 로직,
+            운영 일정에 미치는 영향이 큼
+          </p>
+        </div>
+
+
+        <div class="tradeoff-arrow" aria-hidden="true">
+          →
+        </div>
+
+
+        <div>
+          <span>Selected</span>
+          <strong>기존 구조 유지 + 데이터 검증</strong>
+
+          <p>
+            변경 범위를 제한하고 실제 데이터 관계를 분석하여
+            운영 안정성을 유지하면서 마이그레이션 수행
+          </p>
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         05. Authentication Problem
+         ===================================================== -->
+    <section class="post-section" aria-labelledby="auth-problem-title">
+
+      <div class="post-section-heading">
+        <span class="post-section-number">05</span>
+
+        <div>
+          <p class="post-section-kicker">Authentication Problem</p>
+
+          <h2 id="auth-problem-title">
+            기존 JWT는 인증 토큰을 발급했지만 로그인 상태를 유지하지 못했습니다.
+          </h2>
+        </div>
+      </div>
+
+
+      <div class="post-copy">
+        <p>
+          기존 인증 구조에서는 로그인 시 Access Token 하나만 발급했습니다.
+          Access Token의 유효시간은 약 30분이었고,
+          토큰이 만료되면 사용자는 다시 로그인해야 했습니다.
+        </p>
+
+        <p>
+          또한 클라이언트에서 인증 토큰이 직접 노출되는 구조였으며,
+          서버에서 토큰의 수명 주기나 재사용을 제어할 수 있는 별도의
+          Refresh Token 관리 구조도 존재하지 않았습니다.
+        </p>
+      </div>
+
+
+      <div class="problem-grid">
+
+        <article class="problem-card">
+          <span class="problem-label">Session</span>
+
+          <h3>
+            Access Token 만료가 곧 로그인 종료였습니다.
+          </h3>
+
+          <ul>
+            <li>Access Token만 발급</li>
+            <li>약 30분 후 인증 만료</li>
+            <li>자동 재발급 구조 없음</li>
+            <li>사용자가 반복적으로 다시 로그인해야 함</li>
+          </ul>
+        </article>
+
+
+        <article class="problem-card">
+          <span class="problem-label">Security</span>
+
+          <h3>
+            토큰의 발급 이후 수명 주기를 관리하기 어려웠습니다.
+          </h3>
+
+          <ul>
+            <li>Refresh Token 관리 구조 부재</li>
+            <li>토큰 재사용을 제어할 Rotation 정책 부재</li>
+            <li>로그아웃된 토큰을 별도로 무효화할 수단 부족</li>
+            <li>Access Token Payload에 불필요한 정보 포함</li>
+          </ul>
+        </article>
+
+      </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         06. JWT Redesign
+         ===================================================== -->
+    <section class="post-section" aria-labelledby="jwt-title">
+
+      <div class="post-section-heading">
+        <span class="post-section-number">06</span>
+
+        <div>
+          <p class="post-section-kicker">JWT Redesign</p>
+
+          <h2 id="jwt-title">
+            Access Token과 Refresh Token의 역할을 분리하고 토큰 수명 주기를 관리했습니다.
+          </h2>
+        </div>
+      </div>
+
+
+      <div class="change-list">
+
+        <article class="change-item">
+          <span class="change-index">01</span>
+
+          <div>
+            <h3>Refresh Token 기반 재발급 구조 구현</h3>
+
+            <p>
+              Access Token이 만료되더라도 유효한 Refresh Token을 통해
+              새로운 Access Token을 발급받을 수 있도록 변경하여
+              로그인 상태를 유지할 수 있도록 했습니다.
+            </p>
+          </div>
+        </article>
+
+
+        <article class="change-item">
+          <span class="change-index">02</span>
+
+          <div>
+            <h3>Access Token 유효시간 및 Payload 최소화</h3>
+
+            <p>
+              Access Token 유효시간을 기존 30분에서 10분으로 줄이고,
+              Payload에는 회원 식별을 위한 ID와 권한 정보인 Role만 포함하도록
+              불필요한 정보를 제거했습니다.
+            </p>
+          </div>
+        </article>
+
+
+        <article class="change-item">
+          <span class="change-index">03</span>
+
+          <div>
+            <h3>Refresh Token Rotation</h3>
+
+            <p>
+              Refresh Token을 사용할 때 새로운 토큰을 발급하고
+              기존 토큰을 더 이상 사용할 수 없도록 처리하여,
+              동일한 Refresh Token이 지속적으로 재사용되는 것을 방지했습니다.
+            </p>
+          </div>
+        </article>
+
+
+        <article class="change-item">
+          <span class="change-index">04</span>
+
+          <div>
+            <h3>토큰 해시 저장 및 Blacklist</h3>
+
+            <p>
+              Refresh Token 원문을 그대로 저장하지 않고 해시 값을 저장하여
+              서버 저장소가 노출될 경우의 위험을 줄이고,
+              폐기된 토큰을 Blacklist로 관리하여 재사용을 제한했습니다.
+            </p>
+          </div>
+        </article>
+
+
+        <article class="change-item">
+          <span class="change-index">05</span>
+
+          <div>
+            <h3>Secure Cookie 적용</h3>
+
+            <p>
+              Refresh Token을 Secure Cookie를 통해 전달하도록 변경하여
+              기존 인증 방식에서 발생하던 클라이언트 측 토큰 노출 위험을 줄였습니다.
+            </p>
+          </div>
+        </article>
+
+
+        <article class="change-item">
+          <span class="change-index">06</span>
+
+          <div>
+            <h3>프론트엔드 사용자 상태 관리</h3>
+
+            <p>
+              React 프론트엔드에서는 Zustand를 이용해 인증된 사용자 정보를
+              전역 상태로 관리하도록 변경하여 로그인 상태와 사용자 정보를
+              여러 화면에서 일관되게 사용할 수 있도록 개선했습니다.
+            </p>
+          </div>
+        </article>
+
+      </div>
+
+
+      <div class="before-after">
+
+        <div class="before-after-column">
+          <span class="before-after-label">Before</span>
+
+          <ol>
+            <li>로그인</li>
+            <li>Access Token 단독 발급</li>
+            <li>약 30분 후 토큰 만료</li>
+            <li>인증 상태 종료</li>
+            <li>사용자 재로그인</li>
+          </ol>
+        </div>
+
+
+        <div class="before-after-divider" aria-hidden="true">
+          →
+        </div>
+
+
+        <div class="before-after-column before-after-column-after">
+          <span class="before-after-label">After</span>
+
+          <ol>
+            <li>Access + Refresh Token 발급</li>
+            <li>Access Token 10분 사용</li>
+            <li>Refresh Token으로 재발급</li>
+            <li>Rotation으로 기존 Refresh Token 폐기</li>
+            <li>인증 상태 유지</li>
+          </ol>
+        </div>
+
+      </div>
+
+
+      <div class="post-note post-note-accent">
+        <strong>Token Lifecycle</strong>
+
+        <p>
+          단순히 Refresh Token을 추가하는 것에 그치지 않고,
+          발급 → 저장 → 검증 → 재발급 → Rotation → 폐기까지
+          토큰의 전체 수명 주기를 서버에서 관리할 수 있도록 구조를 변경했습니다.
+        </p>
+      </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         07. Result
+         ===================================================== -->
+    <section
+        class="post-section post-section-result"
+        aria-labelledby="result-title"
+    >
+
+      <div class="post-section-heading">
+        <span class="post-section-number">07</span>
+
+        <div>
+          <p class="post-section-kicker">Result</p>
+
+          <h2 id="result-title">
+            기존 시스템의 변경 범위를 최소화하면서 데이터와 인증 구조의 신뢰성을 높였습니다.
+          </h2>
+        </div>
+      </div>
+
+
+      <div class="result-grid">
+
+        <article class="result-card">
+          <span>Database</span>
+
+          <strong>26개 테이블 관계 분석</strong>
+
+          <p>
+            불완전한 PK·FK와 제약조건에 의존하지 않고
+            실제 데이터를 기준으로 테이블 관계와 이관 순서를 정리했습니다.
+          </p>
+        </article>
+
+
+        <article class="result-card">
+          <span>Migration</span>
+
+          <strong>데이터 정합성 확보</strong>
+
+          <p>
+            SELECT·JOIN 기반의 사전·사후 검증을 통해
+            데이터 누락과 잘못된 참조 관계를 확인하며 운영 데이터를 이관했습니다.
+          </p>
+        </article>
+
+
+        <article class="result-card result-card-primary">
+          <span>Authentication</span>
+
+          <strong>로그인 유지 구조 구현</strong>
+
+          <p>
+            Refresh Token과 Rotation, Blacklist, 해시 저장을 적용해
+            토큰의 발급부터 폐기까지 관리 가능한 인증 구조로 개선했습니다.
+          </p>
+        </article>
+
+      </div>
+
+
+      <div class="decision-box">
+
+        <p class="decision-label">
+          What I learned
+        </p>
+
+        <h3>
+          레거시 시스템에서는 가장 이상적인 구조보다
+          현재 시스템을 안전하게 개선할 수 있는 방법을 찾는 것이 중요했습니다.
+        </h3>
+
+        <p>
+          데이터베이스의 구조적 문제를 발견했지만 이미 구현된 애플리케이션과
+          운영 환경에 미치는 영향을 고려해 대규모 스키마 변경 대신
+          실제 데이터 관계를 분석하고 검증하는 방법을 선택했습니다.
+          인증 역시 기능 추가에 그치지 않고 토큰의 저장과 재발급,
+          재사용 방지와 폐기까지 하나의 수명 주기로 바라보고 개선했습니다.
+        </p>
+
+        <ul>
+          <li>
+            스키마 정의만 신뢰하지 않고 실제 데이터를 통해 테이블 관계를 검증
+          </li>
+
+          <li>
+            변경에 따른 영향 범위를 고려하여 마이그레이션 전략을 결정
+          </li>
+
+          <li>
+            데이터 이관 성공 여부를 INSERT 결과가 아닌 참조 관계와 정합성으로 판단
+          </li>
+
+          <li>
+            JWT를 단순 토큰 발급 기능이 아닌 수명 주기를 가진 인증 구조로 개선
+          </li>
+        </ul>
+
+      </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         Footer
+         ===================================================== -->
+    <footer class="post-footer">
+
+      <a
+          class="post-footer-link"
+          href="../../../index.html#experience"
+      >
+        ← 기술 경험 목록으로 돌아가기
+      </a>
+
+      <p>
+        © 2026 Lim Daeil
+      </p>
+
+    </footer>
+
+  </article>
+</main>
+
+</body>
+</html>
