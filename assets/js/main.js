@@ -13,7 +13,7 @@ btn.addEventListener('click', () => {
   const utterancesFrame = document.querySelector('.utterances-frame');
   if (utterancesFrame) {
     utterancesFrame.contentWindow.postMessage(
-        { type: 'set-theme', theme: next === 'dark' ? 'github-dark' : 'github-light' },
+        { type: 'set-theme', theme: next === 'dark' ? '.github-dark' : '.github-light' },
         'https://utteranc.es'
     );
   }
@@ -29,7 +29,7 @@ document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
 if (window.location.pathname.includes('/posts/')) {
   const footer = document.querySelector('footer');
   if (footer) {
-    const currentTheme = html.getAttribute('data-theme') === 'dark' ? 'github-dark' : 'github-light';
+    const currentTheme = html.getAttribute('data-theme') === 'dark' ? '.github-dark' : '.github-light';
     const section = document.createElement('div');
     section.className = 'comments-section';
     const container = document.createElement('div');
@@ -45,7 +45,7 @@ if (window.location.pathname.includes('/posts/')) {
 
     const script = document.createElement('script');
     script.src = 'https://utteranc.es/client.js';
-    script.setAttribute('repo', 'kdohyeon/kdohyeon.github.io');
+    script.setAttribute('repo', 'kdohyeon/kdohyeon..github.io');
     script.setAttribute('issue-term', 'pathname');
     script.setAttribute('theme', currentTheme);
     script.setAttribute('crossorigin', 'anonymous');
