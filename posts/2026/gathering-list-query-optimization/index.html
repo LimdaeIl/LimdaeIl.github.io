@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="ko" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>모임 목록 조회 N+1 및 Cursor Pagination 개선 — 임대일</title>
+
+  <meta
+      name="description"
+      content="모임 목록 조회 API에서 엔티티 기반 DTO 변환으로 발생하는 N+1 문제를 분석하고, QueryDSL Projection·IN 쿼리·Map 조립과 Cursor Pagination으로 조회 구조를 개선한 경험입니다."
+  >
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+  <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=Montserrat:wght@600;700;800;900&family=Roboto:wght@400;500;700;900&display=swap"
+  >
+
+  <link rel="stylesheet" href="../../../assets/css/main.css">
+  <link rel="stylesheet" href="../../../assets/css/post.css">
+</head>
+
+<body class="post-page">
+
+<div class="post-topbar">
+  <div class="post-topbar-inner">
+    <a class="post-brand" href="../../../index.html">임대일.dev</a>
+
+    <a class="post-back-link" href="../../../index.html#experience">
+      Portfolio로 돌아가기
+    </a>
+  </div>
+</div>
+
+
+<main class="post-main">
+  <article class="post-container">
+
+    <!-- =====================================================
+         Hero
+         ===================================================== -->
+    <header class="post-hero">
+
+      <div class="post-breadcrumb">
+        <span>Technical Experience</span>
+        <span aria-hidden="true">/</span>
+        <span>Backend · QueryDSL · Pagination</span>
+      </div>
+
+      <h1 class="post-title">
+        모임 목록 조회의 N+1을 구조적으로 제거하고<br class="desktop-only">
+        Cursor Pagination으로 조회 안정성 개선
+      </h1>
+
+      <p class="post-lead">
+        모임 목록 조회에서 엔티티의 LAZY 연관관계를 따라 DTO를 조립하면서
+        페이지 크기에 비례해 쿼리가 증가하는 N+1 문제를 분석했습니다.
+        목록 전용 QueryDSL Projection과 컬렉션 IN 조회·Map 조립으로 쿼리 수를 고정하고,
+        OFFSET 대신 Cursor Pagination과 size+1 패턴을 적용해 무한 스크롤에 적합한 조회 구조로 개선했습니다.
+      </p>
+
+      <div class="post-meta">
+        <span>카테고리</span>
+        <span aria-hidden="true">:</span>
+        <span>Backend / Query Optimization / Pagination</span>
+        <span aria-hidden="true">·</span>
+        <time datetime="2025-11">
+          2025.11 ~ 2026.01
+        </time>
+      </div>
+
+      <div class="post-tags" aria-label="사용 기술">
+        <span class="tag tag-java">Java</span>
+        <span class="tag tag-spring">Spring Boot</span>
+        <span class="tag tag-jpa">JPA</span>
+        <span class="tag tag-querydsl">QueryDSL</span>
+        <span class="tag tag-mysql">MySQL</span>
+      </div>
+
+    </header>
+
+
+    <!-- =====================================================
+         01. Problem
+         ===================================================== -->
+    <section class="post-section" aria-labelledby="problem-title">
+
+      <div class="post-section-heading">
+        <span class="post-section-number">01</span>
+
+        <div>
+          <p class="post-section-kicker">Problem</p>
+
+          <h2 id="problem-title">
+            목록 쿼리는 한 번이었지만 DTO를 만드는 순간 추가 쿼리가 연쇄적으로 발생했습니다.
+          </h2>
+        </div>
+      </div>
+
+      <div class="post-copy">
+        <p>
+          초기 구현은 모임 엔티티 목록을 조회한 뒤 서비스 계층에서
+          이미지, 태그, 참가자, 작성자 정보를 꺼내 응답 DTO를 만드는 구조였습니다.
+          코드만 보면 목록 조회는 한 번의 Repository 호출로 끝나는 것처럼 보였습니다.
+        </p>
+
+        <p>
+          하지만 조회 결과가 <strong>List&lt;Group&gt;</strong>이었기 때문에
+          DTO 변환 과정에서 <code>group.getImages()</code>,
+          <code>group.getGroupTags()</code>, <code>group.getUsers()</code>,
+          <code>group.getHost()</code>와 같은 LAZY 연관관계 접근이 발생했습니다.
+          이 접근이 페이지의 모임 수에 비례하는 추가 SQL을 만들고 있었습니다.
+        </p>
+      </div>
+
+      <div class="problem-grid">
+
+        <article class="problem-card">
+          <span class="problem-label">N+1 Query</span>
+
+          <h3>
+            데이터 수집이 엔티티의 LAZY 접근 뒤에 숨어 있었습니다.
+          </h3>
+
+          <ul>
+            <li>모임별 이미지 추가 조회</li>
+            <li>모임별 태그 및 Tag 추가 조회 가능</li>
+            <li>참가자 전체 로딩 후 애플리케이션에서 count</li>
+            <li>Host 접근에 따른 추가 조회 가능</li>
+          </ul>
+        </article>
+
+
+        <article class="problem-card">
+          <span class="problem-label">Pagination</span>
+
+          <h3>
+            목록 데이터가 커질수록 OFFSET 방식의 읽고 버리는 비용도 증가할 수 있었습니다.
+          </h3>
+
+          <ul>
+            <li>뒤 페이지로 갈수록 OFFSET 증가</li>
+            <li>무한 스크롤 UX와 페이지 번호의 불필요한 결합</li>
+            <li>totalCount 조회 비용 발생 가능</li>
+            <li>컬렉션 JOIN 시 페이징 단위가 흔들릴 위험</li>
+          </ul>
+        </article>
+
+      </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         02. N+1 Analysis
+         ===================================================== -->
+    <section class="post-section" aria-labelledby="nplus-title">
+
+      <div class="post-section-heading">
+        <span class="post-section-number">02</span>
+
+        <div>
+          <p class="post-section-kicker">N+1 Analysis</p>
+
+          <h2 id="nplus-title">
+            문제는 Repository 호출 횟수가 아니라 엔티티를 응답 DTO까지 끌고 온 구조였습니다.
+          </h2>
+        </div>
+      </div>
+
+      <div class="post-copy">
+        <p>
+          예를 들어 페이지에 모임 10개가 있을 때 이미지 컬렉션만 LAZY 로딩되어도
+          목록 쿼리 1번 이후 최대 10번의 이미지 조회가 추가될 수 있습니다.
+          태그와 참가자 컬렉션까지 접근하면 쿼리 수는 데이터 분포에 따라 더 증가합니다.
+        </p>
+
+        <p>
+          특히 참가자 수만 필요했지만
+          <code>group.getUsers().stream().filter(...).count()</code> 형태로 계산하면
+          그룹별 참가자 Row를 모두 애플리케이션에 로딩한 뒤 개수를 세게 됩니다.
+          단순 N+1뿐 아니라 필요 이상의 데이터를 읽는 비용까지 발생하는 구조였습니다.
+        </p>
+      </div>
+
+      <div class="before-after">
+
+        <div class="before-after-column">
+          <span class="before-after-label">V1</span>
+
+          <ol>
+            <li>Group 엔티티 목록 조회</li>
+            <li>group.getImages()</li>
+            <li>group.getGroupTags()</li>
+            <li>group.getUsers()</li>
+            <li>group.getHost()</li>
+            <li>DTO 변환 중 LAZY Query 발생</li>
+          </ol>
+        </div>
+
+
+        <div class="before-after-divider" aria-hidden="true">
+          →
+        </div>
+
+
+        <div class="before-after-column before-after-column-after">
+          <span class="before-after-label">V2</span>
+
+          <ol>
+            <li>목록 전용 Projection 조회</li>
+            <li>태그 IN 조회</li>
+            <li>이미지 IN 조회</li>
+            <li>groupId 기준 Map 생성</li>
+            <li>메모리에서 DTO 조립</li>
+            <li>엔티티 LAZY 접근 제거</li>
+          </ol>
+        </div>
+
+      </div>
+
+      <blockquote class="post-quote">
+        N+1을 특정 getter 호출에서 막는 대신, 목록 조회 결과에서 엔티티 자체를 제거해 LAZY 로딩이 발생할 통로를 없애기로 했습니다.
+      </blockquote>
+
+    </section>
+
+
+    <!-- =====================================================
+         03. Projection
+         ===================================================== -->
+    <section class="post-section" aria-labelledby="projection-title">
+
+      <div class="post-section-heading">
+        <span class="post-section-number">03</span>
+
+        <div>
+          <p class="post-section-kicker">QueryDSL Projection</p>
+
+          <h2 id="projection-title">
+            목록 화면에 필요한 값만 GroupListRow로 직접 조회했습니다.
+          </h2>
+        </div>
+      </div>
+
+      <div class="post-copy">
+        <p>
+          V2의 가장 큰 변화는 Repository가 더 이상
+          <code>List&lt;Group&gt;</code>을 반환하지 않는다는 점입니다.
+          QueryDSL Projection을 사용해 목록 카드에 필요한 값만 가진
+          <strong>GroupListRow</strong>를 직접 조회하도록 변경했습니다.
+        </p>
+
+        <p>
+          모임 기본 정보와 Host 정보는 첫 쿼리에서 함께 조회하고,
+          참가자 수 역시 애플리케이션에서 참가자 엔티티를 로딩하지 않고
+          DB의 <code>COUNT()</code>로 계산했습니다.
+          Projection은 엔티티가 아니므로 값을 읽는 과정에서 추가 LAZY Query가 발생하지 않습니다.
+        </p>
+      </div>
+
+      <div class="change-list">
+
+        <article class="change-item">
+          <span class="change-index">01</span>
+
+          <div>
+            <h3>Group → GroupListRow</h3>
+
+            <p>
+              엔티티 그래프를 서비스까지 전달하지 않고
+              목록 화면에 필요한 필드만 조회 결과에 포함했습니다.
+            </p>
+          </div>
+        </article>
+
+
+        <article class="change-item">
+          <span class="change-index">02</span>
+
+          <div>
+            <h3>Host JOIN</h3>
+
+            <p>
+              Group과 Host는 ManyToOne 관계이므로 목록 쿼리에서 JOIN해도
+              그룹 한 개가 여러 행으로 증가하지 않아 작성자 정보를 함께 조회했습니다.
+            </p>
+          </div>
+        </article>
+
+
+        <article class="change-item">
+          <span class="change-index">03</span>
+
+          <div>
+            <h3>Participant COUNT</h3>
+
+            <p>
+              참가자 컬렉션 전체를 애플리케이션에 로딩하지 않고
+              ATTEND 상태만 LEFT JOIN한 뒤 DB에서 참가자 수를 집계했습니다.
+            </p>
+          </div>
+        </article>
+
+      </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         04. Group One Row
+         ===================================================== -->
+    <section class="post-section" aria-labelledby="row-title">
+
+      <div class="post-section-heading">
+        <span class="post-section-number">04</span>
+
+        <div>
+          <p class="post-section-kicker">One Group, One Row</p>
+
+          <h2 id="row-title">
+            페이징 기준을 지키기 위해 “모임 1개 = 결과 1행”을 목록 쿼리의 불변식으로 잡았습니다.
+          </h2>
+        </div>
+      </div>
+
+      <div class="post-copy">
+        <p>
+          참가자 수를 구하려면 GroupUser를 JOIN해야 하지만,
+          참가자가 여러 명이면 Group 한 개가 여러 행으로 늘어납니다.
+          따라서 ATTEND 참가자를 LEFT JOIN하고 <code>COUNT(groupUser.id)</code>와
+          <code>GROUP BY</code>를 사용해 다시 모임 단위 한 행으로 집계했습니다.
+        </p>
+
+        <p>
+          참가자가 없는 모임도 목록에 노출되어야 하므로 INNER JOIN이 아니라 LEFT JOIN을 사용했습니다.
+          또한 <code>groupUser.status = ATTEND</code> 조건을 WHERE가 아닌 ON 절에 두어
+          참가자가 없는 모임이 필터링되는 문제를 방지했습니다.
+        </p>
+      </div>
+
+      <div class="tradeoff-card">
+
+        <div>
+          <span>Incorrect</span>
+          <strong>LEFT JOIN + WHERE status</strong>
+
+          <p>
+            참가자가 없는 경우 오른쪽 Row가 NULL이므로
+            WHERE 조건에서 탈락해 LEFT JOIN이 사실상 INNER JOIN처럼 동작할 수 있습니다.
+          </p>
+        </div>
+
+
+        <div class="tradeoff-arrow" aria-hidden="true">
+          →
+        </div>
+
+
+        <div>
+          <span>Selected</span>
+          <strong>LEFT JOIN + ON status</strong>
+
+          <p>
+            모임 Row는 유지하면서 JOIN되는 참가자만 ATTEND 상태로 제한해
+            참가자 0명인 모임도 COUNT 0으로 조회했습니다.
+          </p>
+        </div>
+
+      </div>
+
+      <div class="post-note post-note-accent">
+        <strong>Paging Invariant</strong>
+
+        <p>
+          목록 쿼리의 기준을 “Group 1개 = Row 1개”로 고정해야
+          LIMIT가 SQL 행 수가 아니라 실제 모임 개수와 일치하고 커서 페이징도 안정적으로 동작합니다.
+        </p>
+      </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         05. Collections
+         ===================================================== -->
+    <section class="post-section" aria-labelledby="collection-title">
+
+      <div class="post-section-heading">
+        <span class="post-section-number">05</span>
+
+        <div>
+          <p class="post-section-kicker">Collection Strategy</p>
+
+          <h2 id="collection-title">
+            태그와 이미지는 JOIN하지 않고 IN 쿼리로 조회한 뒤 Map으로 조립했습니다.
+          </h2>
+        </div>
+      </div>
+
+      <div class="post-copy">
+        <p>
+          처음에는 이미지와 태그도 목록 쿼리에 JOIN하면
+          한 번의 SQL로 끝낼 수 있다고 생각할 수 있습니다.
+          하지만 모임 한 개에 태그 3개와 이미지 3개가 있다면
+          JOIN 결과는 조합에 따라 9행까지 증가할 수 있습니다.
+        </p>
+
+        <p>
+          이 상태에서 <code>LIMIT size + 1</code>을 적용하면
+          DB는 모임 개수가 아니라 JOIN 결과 행을 기준으로 자릅니다.
+          따라서 “1쿼리”를 목표로 하기보다
+          <strong>목록 Row를 먼저 안정적으로 페이징하고 컬렉션은 후속 조회로 붙이는 방식</strong>을 선택했습니다.
+        </p>
+      </div>
+
+      <div class="problem-grid">
+
+        <article class="problem-card">
+          <span class="problem-label">Collection JOIN</span>
+
+          <h3>
+            쿼리 수는 적어 보여도 결과 행이 곱집합 형태로 증가할 수 있습니다.
+          </h3>
+
+          <ul>
+            <li>태그 × 이미지 행 폭발</li>
+            <li>LIMIT 기준 왜곡</li>
+            <li>DISTINCT / GROUP BY 추가 비용</li>
+            <li>그룹 단위 페이징 불안정</li>
+          </ul>
+        </article>
+
+
+        <article class="problem-card">
+          <span class="problem-label">IN + Map</span>
+
+          <h3>
+            페이지에 포함된 groupId만 한 번에 조회하고 애플리케이션에서 조립했습니다.
+          </h3>
+
+          <ul>
+            <li>태그 IN 조회 1번</li>
+            <li>이미지 IN 조회 1번</li>
+            <li>groupId → List Map 구성</li>
+            <li>페이지 크기와 무관한 고정 쿼리 수</li>
+          </ul>
+        </article>
+
+      </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         06. Cursor Pagination
+         ===================================================== -->
+    <section class="post-section" aria-labelledby="cursor-title">
+
+      <div class="post-section-heading">
+        <span class="post-section-number">06</span>
+
+        <div>
+          <p class="post-section-kicker">Cursor Pagination</p>
+
+          <h2 id="cursor-title">
+            OFFSET 대신 id 기반 Cursor와 size+1 패턴으로 무한 스크롤을 구성했습니다.
+          </h2>
+        </div>
+      </div>
+
+      <div class="post-copy">
+        <p>
+          목록은 최신순 <code>id DESC</code>로 정렬하고,
+          다음 요청에서는 이전 페이지 마지막 id보다 작은 데이터만 조회하도록
+          <code>id &lt; cursor</code> 조건을 사용했습니다.
+        </p>
+
+        <p>
+          또한 전체 데이터 수를 COUNT하지 않고 요청 크기보다 한 건 더 조회했습니다.
+          <code>LIMIT size + 1</code> 결과가 size보다 크면 다음 페이지가 있다고 판단하고,
+          실제 응답에는 size개만 포함한 뒤 마지막 모임 id를 nextCursor로 반환했습니다.
+        </p>
+      </div>
+
+      <div class="before-after">
+
+        <div class="before-after-column">
+          <span class="before-after-label">OFFSET</span>
+
+          <ol>
+            <li>페이지 번호 계산</li>
+            <li>OFFSET N</li>
+            <li>앞 Row를 읽고 건너뜀</li>
+            <li>뒤 페이지일수록 비용 증가 가능</li>
+            <li>totalCount 의존 가능</li>
+          </ol>
+        </div>
+
+
+        <div class="before-after-divider" aria-hidden="true">
+          →
+        </div>
+
+
+        <div class="before-after-column before-after-column-after">
+          <span class="before-after-label">CURSOR</span>
+
+          <ol>
+            <li>ORDER BY id DESC</li>
+            <li>WHERE id &lt; cursor</li>
+            <li>LIMIT size + 1</li>
+            <li>hasNext 메모리 판별</li>
+            <li>마지막 id를 nextCursor로 반환</li>
+          </ol>
+        </div>
+
+      </div>
+
+      <blockquote class="post-quote">
+        무한 스크롤에서는 전체 페이지 수보다 “다음 데이터가 있는가”가 <br/>
+        중요했기 때문에 totalCount 없이 size+1로 hasNext를 판별했습니다.
+      </blockquote>
+
+    </section>
+
+
+    <!-- =====================================================
+         07. Query Flow
+         ===================================================== -->
+    <section class="post-section" aria-labelledby="query-title">
+
+      <div class="post-section-heading">
+        <span class="post-section-number">07</span>
+
+        <div>
+          <p class="post-section-kicker">Query Flow</p>
+
+          <h2 id="query-title">
+            목록 조회 1회를 예측 가능한 3개의 쿼리로 수렴시켰습니다.
+          </h2>
+        </div>
+      </div>
+
+      <div class="post-copy">
+        <p>
+          V2는 모든 데이터를 하나의 거대한 SQL로 가져오는 것을 목표로 하지 않았습니다.
+          대신 페이지 크기나 모임별 태그·이미지 개수와 관계없이
+          목록 요청마다 쿼리 발생 지점을 명확하게 제한하는 것을 목표로 했습니다.
+        </p>
+      </div>
+
+      <div class="change-list">
+
+        <article class="change-item">
+          <span class="change-index">01</span>
+
+          <div>
+            <h3>GroupListRow 조회</h3>
+
+            <p>
+              모임 기본 정보, Host 정보, 참가자 수를 Projection으로 조회하고
+              size+1만큼 가져옵니다.
+            </p>
+          </div>
+        </article>
+
+
+        <article class="change-item">
+          <span class="change-index">02</span>
+
+          <div>
+            <h3>Tag IN 조회</h3>
+
+            <p>
+              현재 페이지의 groupId 목록을 기준으로 태그를 한 번에 가져와
+              groupId별 List로 묶습니다.
+            </p>
+          </div>
+        </article>
+
+
+        <article class="change-item">
+          <span class="change-index">03</span>
+
+          <div>
+            <h3>Image IN 조회</h3>
+
+            <p>
+              동일한 groupId 목록으로 목록 카드에 필요한 이미지 URL을 한 번에 조회하고
+              Map으로 구성합니다.
+            </p>
+          </div>
+        </article>
+
+      </div>
+
+      <div class="metric-grid">
+
+        <div class="metric-card">
+          <strong>목록 조회: 1</strong>
+          <span>목록 Projection 조회</span>
+        </div>
+
+        <div class="metric-card">
+          <strong>태그 조회: 1</strong>
+          <span>태그 IN 조회</span>
+        </div>
+
+        <div class="metric-card">
+          <strong>이미지 조회: 1</strong>
+          <span>이미지 IN 조회</span>
+        </div>
+
+        <div class="metric-card metric-card-highlight">
+          <strong>3 Query</strong>
+          <span>비회원 목록 기본 흐름의 예측 가능한 쿼리 수</span>
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         08. Result
+         ===================================================== -->
+    <section
+        class="post-section post-section-result"
+        aria-labelledby="result-title"
+    >
+
+      <div class="post-section-heading">
+        <span class="post-section-number">08</span>
+
+        <div>
+          <p class="post-section-kicker">Result</p>
+
+          <h2 id="result-title">
+            N+1과 페이징 문제를 개별 튜닝이 아니라 목록 조회 전용 설계로 해결했습니다.
+          </h2>
+        </div>
+      </div>
+
+      <div class="result-grid">
+
+        <article class="result-card">
+          <span>N+1</span>
+
+          <strong>Entity → Projection</strong>
+
+          <p>
+            목록 응답에서 엔티티를 제거해 DTO 조립 중 LAZY 로딩이 발동하는 구조 자체를 차단했습니다.
+          </p>
+        </article>
+
+
+        <article class="result-card">
+          <span>Pagination</span>
+
+          <strong>Cursor + size+1</strong>
+
+          <p>
+            id 기반 seek 조건과 nextCursor를 사용해
+            무한 스크롤에 맞는 목록 조회 구조를 구성했습니다.
+          </p>
+        </article>
+
+
+        <article class="result-card result-card-primary">
+          <span>Query Stability</span>
+
+          <strong>예측 가능한 3 Query</strong>
+
+          <p>
+            목록 Projection, 태그 IN, 이미지 IN으로 조회 경로를 분리해
+            페이지 크기에 따라 쿼리가 증가하던 구조를 고정된 쿼리 흐름으로 변경했습니다.
+          </p>
+        </article>
+
+      </div>
+
+
+      <div class="decision-box">
+
+        <p class="decision-label">
+          What I learned
+        </p>
+
+        <h3>
+          목록 API 최적화에서 중요한 것은 “무조건 1쿼리”가 아니라 페이징 안정성과 쿼리 예측 가능성이었습니다.
+        </h3>
+
+        <p>
+          N+1을 해결하기 위해 모든 연관관계를 Fetch Join하는 방식은
+          컬렉션이 포함된 목록에서 행 폭발과 페이징 문제를 다시 만들 수 있습니다.
+          그래서 목록 화면이 요구하는 데이터 형태를 먼저 정의하고,
+          그 형태에 맞춰 조회 전용 Projection과 후속 컬렉션 조회를 분리했습니다.
+        </p>
+
+        <ul>
+          <li>
+            엔티티를 목록 응답까지 전달하지 않고 QueryDSL Projection으로 필요한 값만 조회
+          </li>
+
+          <li>
+            참가자 수는 컬렉션 전체 로딩 대신 DB COUNT로 계산
+          </li>
+
+          <li>
+            LEFT JOIN의 상태 필터를 ON 절에 두어 참가자 0명인 모임도 정상 조회
+          </li>
+
+          <li>
+            태그·이미지 컬렉션은 IN 쿼리 + Map 조립으로 분리해 행 폭발 방지
+          </li>
+
+          <li>
+            id &lt; cursor + ORDER BY id DESC로 Cursor Pagination 구성
+          </li>
+
+          <li>
+            size+1 패턴으로 별도 totalCount 없이 hasNext와 nextCursor 판별
+          </li>
+        </ul>
+
+      </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         Footer
+         ===================================================== -->
+    <footer class="post-footer">
+
+      <a
+          class="post-footer-link"
+          href="../../../index.html#experience"
+      >
+        ← 기술 경험 목록으로 돌아가기
+      </a>
+
+      <p>
+        © 2026 Lim Daeil
+      </p>
+
+    </footer>
+
+  </article>
+</main>
+
+</body>
+</html>

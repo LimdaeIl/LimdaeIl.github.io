@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="ko" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>이미지 최적화와 Redis Pre-upload 설계 — 임대일</title>
+
+  <meta
+      name="description"
+      content="WebP 변환과 용도별 리사이징으로 이미지 전송 비용을 줄이고, Redis imageKey·TTL·consume 구조로 이미지 선 업로드의 정합성과 운영 안정성을 개선한 경험입니다."
+  >
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+  <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=Montserrat:wght@600;700;800;900&family=Roboto:wght@400;500;700;900&display=swap"
+  >
+
+  <link rel="stylesheet" href="../../../assets/css/main.css">
+  <link rel="stylesheet" href="../../../assets/css/post.css">
+</head>
+
+<body class="post-page">
+
+<div class="post-topbar">
+  <div class="post-topbar-inner">
+    <a class="post-brand" href="../../../index.html">임대일.dev</a>
+
+    <a class="post-back-link" href="../../../index.html#experience">
+      Portfolio로 돌아가기
+    </a>
+  </div>
+</div>
+
+
+<main class="post-main">
+  <article class="post-container">
+
+    <!-- =====================================================
+         Hero
+         ===================================================== -->
+    <header class="post-hero">
+
+      <div class="post-breadcrumb">
+        <span>Technical Experience</span>
+        <span aria-hidden="true">/</span>
+        <span>Backend · Image · Redis · S3</span>
+      </div>
+
+      <h1 class="post-title">
+        이미지 최적화와 Redis Pre-upload로<br class="desktop-only">
+        이미지 연결 정합성 개선
+      </h1>
+
+      <p class="post-lead">
+        모임 목록과 상세 화면에서 반복적으로 노출되는 이미지의 전송량과 렌더링 비용을 줄이기 위해
+        업로드 시점에 WebP 변환과 용도별 리사이징을 적용했습니다.
+        또한 이미지 처리와 모임 생성 트랜잭션을 분리하고,
+        Redis의 imageKey·TTL·consume 구조를 통해 서버가 이미지 URL과 사용 여부를 보증하도록 설계했습니다.
+      </p>
+
+      <div class="post-meta">
+        <span>카테고리</span>
+        <span aria-hidden="true">:</span>
+        <span>Backend / Image Optimization / Redis</span>
+        <span aria-hidden="true">·</span>
+        <time datetime="2025-11">
+          2025.11 ~ 2026.01
+        </time>
+      </div>
+
+      <div class="post-tags" aria-label="사용 기술">
+        <span class="tag tag-java">Java</span>
+        <span class="tag tag-spring">Spring Boot</span>
+        <span class="tag tag-redis">Redis</span>
+        <span class="tag tag-aws">Amazon S3</span>
+        <span class="tag tag-nginx">Nginx</span>
+      </div>
+
+    </header>
+
+
+    <!-- =====================================================
+         01. Problem
+         ===================================================== -->
+    <section class="post-section" aria-labelledby="problem-title">
+
+      <div class="post-section-heading">
+        <span class="post-section-number">01</span>
+
+        <div>
+          <p class="post-section-kicker">Problem</p>
+
+          <h2 id="problem-title">
+            원본 이미지를 그대로 저장하고 내려주는 구조는 조회가 많아질수록 비용이 커졌습니다.
+          </h2>
+        </div>
+      </div>
+
+      <div class="post-copy">
+        <p>
+          모임 목록과 검색 결과는 작은 썸네일 이미지가 반복적으로 노출되는 화면입니다.
+          원본 이미지를 그대로 내려준 뒤 브라우저에서 작게 표시하는 방식은
+          화면 크기만 줄일 뿐 실제 네트워크 전송량은 줄이지 못합니다.
+        </p>
+
+        <p>
+          큰 이미지는 다운로드 시간뿐 아니라 브라우저의 디코딩과 리사이징 과정에서도
+          CPU와 메모리를 사용합니다.
+          따라서 조회 시점마다 비용을 지불하는 대신,
+          <strong>업로드 시점에 실제 사용 용도에 맞는 이미지로 변환</strong>하기로 했습니다.
+        </p>
+      </div>
+
+      <div class="problem-grid">
+
+        <article class="problem-card">
+          <span class="problem-label">Network</span>
+
+          <h3>
+            화면에서는 작게 보여도 원본 파일 전체를 먼저 다운로드합니다.
+          </h3>
+
+          <ul>
+            <li>불필요한 전송량 증가</li>
+            <li>이미지 다운로드 지연</li>
+            <li>트래픽 비용 증가</li>
+          </ul>
+        </article>
+
+
+        <article class="problem-card">
+          <span class="problem-label">Rendering</span>
+
+          <h3>
+            브라우저가 큰 이미지를 직접 디코딩하고 축소해야 했습니다.
+          </h3>
+
+          <ul>
+            <li>클라이언트 CPU 사용</li>
+            <li>메모리 사용량 증가</li>
+            <li>목록 화면 체감 성능 저하</li>
+          </ul>
+        </article>
+
+      </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         02. Upload Optimization
+         ===================================================== -->
+    <section class="post-section" aria-labelledby="optimization-title">
+
+      <div class="post-section-heading">
+        <span class="post-section-number">02</span>
+
+        <div>
+          <p class="post-section-kicker">Upload Optimization</p>
+
+          <h2 id="optimization-title">
+            원본 한 장을 업로드 시점에 WebP 기반 main·thumb 이미지로 변환했습니다.
+          </h2>
+        </div>
+      </div>
+
+      <div class="post-copy">
+        <p>
+          서버는 업로드된 원본을 그대로 서비스하지 않고
+          화면 용도에 맞는 두 종류의 파생 이미지를 생성합니다.
+          대표 영역에는 440×240 크기의 main 이미지를,
+          목록과 검색 결과에는 100×100 크기의 thumb 이미지를 사용하도록 했습니다.
+        </p>
+
+        <p>
+          이를 통해 목록 화면에서는 처음부터 작은 WebP 파일만 다운로드하므로
+          원본을 받은 뒤 브라우저에서 축소하는 과정을 제거할 수 있었습니다.
+        </p>
+      </div>
+
+      <div class="before-after">
+
+        <div class="before-after-column">
+          <span class="before-after-label">Before</span>
+
+          <ol>
+            <li>원본 이미지 업로드</li>
+            <li>원본 그대로 저장</li>
+            <li>목록에서도 원본 다운로드</li>
+            <li>브라우저에서 축소</li>
+          </ol>
+        </div>
+
+
+        <div class="before-after-divider" aria-hidden="true">
+          →
+        </div>
+
+
+        <div class="before-after-column before-after-column-after">
+          <span class="before-after-label">After</span>
+
+          <ol>
+            <li>원본 이미지 검증</li>
+            <li>WebP 변환</li>
+            <li>main 440×240 생성</li>
+            <li>thumb 100×100 생성</li>
+            <li>용도별 이미지 직접 제공</li>
+          </ol>
+        </div>
+
+      </div>
+
+      <div class="metric-grid">
+
+        <div class="metric-card">
+          <strong>440×240</strong>
+          <span>대표·상세 영역용 main 이미지</span>
+        </div>
+
+        <div class="metric-card">
+          <strong>100×100</strong>
+          <span>목록·검색 결과용 thumb 이미지</span>
+        </div>
+
+        <div class="metric-card">
+          <strong>최대 3장</strong>
+          <span>모임당 최대 업로드 정책</span>
+        </div>
+
+        <div class="metric-card metric-card-highlight">
+          <strong>70~75%</strong>
+          <span>원문 테스트 기준 JPEG 대비 WebP 용량 감소 수준</span>
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         03. Pre-upload
+         ===================================================== -->
+    <section class="post-section" aria-labelledby="preupload-title">
+
+      <div class="post-section-heading">
+        <span class="post-section-number">03</span>
+
+        <div>
+          <p class="post-section-kicker">Pre-upload</p>
+
+          <h2 id="preupload-title">
+            이미지 처리를 모임 생성 트랜잭션에서 분리해 느리고 실패 가능한 작업을 먼저 끝냈습니다.
+          </h2>
+        </div>
+      </div>
+
+      <div class="post-copy">
+        <p>
+          이미지 변환은 CPU를 사용하고 S3 업로드는 외부 네트워크에 의존합니다.
+          이 작업을 모임 생성 트랜잭션 안에 포함하면
+          이미지 업로드 지연이 API 응답시간을 늘리고,
+          업로드 실패와 DB 저장 실패를 함께 롤백해야 하는 복잡성이 생깁니다.
+        </p>
+
+        <p>
+          따라서 이미지 업로드를 먼저 수행하는 Pre-upload API를 분리했습니다.
+          이미지 최적화와 S3 저장을 먼저 완료하고,
+          모임 생성·수정에서는 이미 준비된 이미지의 <strong>imageKey</strong>만 전달받도록 했습니다.
+        </p>
+      </div>
+
+      <div class="tradeoff-card">
+
+        <div>
+          <span>Domain Transaction</span>
+          <strong>모임 생성 · 수정</strong>
+
+          <p>
+            DB 정합성이 중요한 도메인 작업에 집중하고
+            이미지 변환이나 외부 스토리지 업로드를 직접 수행하지 않습니다.
+          </p>
+        </div>
+
+
+        <div class="tradeoff-arrow" aria-hidden="true">
+          ←
+        </div>
+
+
+        <div>
+          <span>Pre-upload</span>
+          <strong>이미지 처리 · S3 저장</strong>
+
+          <p>
+            실패 가능성이 높은 파일 검증·리사이징·WebP 변환·S3 업로드를
+            도메인 트랜잭션 전에 완료합니다.
+          </p>
+        </div>
+
+      </div>
+
+      <blockquote class="post-quote">
+        이미지 최적화는 단순 압축이 아니라, <br/>
+        느린 외부 작업과 정합성이 중요한 도메인 트랜잭션의 책임을 분리하는 문제였습니다.
+      </blockquote>
+
+    </section>
+
+
+    <!-- =====================================================
+         04. Redis imageKey
+         ===================================================== -->
+    <section class="post-section" aria-labelledby="redis-title">
+
+      <div class="post-section-heading">
+        <span class="post-section-number">04</span>
+
+        <div>
+          <p class="post-section-kicker">Redis imageKey</p>
+
+          <h2 id="redis-title">
+            클라이언트가 URL을 직접 저장하지 않고 서버가 발급한 imageKey로 이미지를 연결했습니다.
+          </h2>
+        </div>
+      </div>
+
+      <div class="post-copy">
+        <p>
+          클라이언트가 임의의 이미지 URL을 요청에 포함하면
+          해당 URL이 실제로 서버가 업로드한 이미지인지,
+          이미 다른 모임에서 사용된 이미지인지 확인하기 어렵습니다.
+        </p>
+
+        <p>
+          이를 방지하기 위해 업로드 성공 시 UUID 기반 imageKey를 발급하고,
+          main·thumb URL 세트를 Redis에 임시 저장했습니다.
+          이후 모임 생성·수정 요청에서는 URL이 아닌 imageKey만 전달받아
+          서버가 실제 URL을 찾아 도메인과 연결하도록 했습니다.
+        </p>
+      </div>
+
+      <div class="change-list">
+
+        <article class="change-item">
+          <span class="change-index">01</span>
+
+          <div>
+            <h3>이미지 업로드</h3>
+
+            <p>
+              파일 형식·용량을 검증하고 WebP 기반 main·thumb 이미지를 생성한 뒤 S3에 업로드합니다.
+            </p>
+          </div>
+        </article>
+
+
+        <article class="change-item">
+          <span class="change-index">02</span>
+
+          <div>
+            <h3>imageKey 발급</h3>
+
+            <p>
+              서버가 UUID를 생성하고 imageKey와 S3 URL 세트를 Redis에 임시 저장합니다.
+            </p>
+          </div>
+        </article>
+
+
+        <article class="change-item">
+          <span class="change-index">03</span>
+
+          <div>
+            <h3>모임 생성 · 수정</h3>
+
+            <p>
+              클라이언트는 URL 대신 imageKey와 정렬 정보만 전달하고,
+              서버가 Redis의 데이터를 검증한 뒤 최종 이미지 엔티티를 생성합니다.
+            </p>
+          </div>
+        </article>
+
+      </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         05. TTL & Consume
+         ===================================================== -->
+    <section class="post-section" aria-labelledby="consume-title">
+
+      <div class="post-section-heading">
+        <span class="post-section-number">05</span>
+
+        <div>
+          <p class="post-section-kicker">TTL &amp; Consume</p>
+
+          <h2 id="consume-title">
+            Redis TTL과 consume을 결합해 임시 이미지의 유효기간과 일회성 사용을 보장했습니다.
+          </h2>
+        </div>
+      </div>
+
+      <div class="post-copy">
+        <p>
+          단순히 imageKey를 Redis에서 조회하기만 하면
+          동일한 키가 여러 모임에 반복적으로 사용될 수 있습니다.
+          따라서 모임 생성·수정에서 이미지를 확정할 때
+          <strong>조회와 삭제를 함께 수행하는 consume 방식</strong>으로 처리했습니다.
+        </p>
+
+        <p>
+          정상적으로 consume된 imageKey는 Redis에서 제거되므로 다시 사용할 수 없습니다.
+          반대로 사용자가 이미지만 업로드하고 화면을 이탈한 경우에는
+          TTL이 만료되어 해당 키를 더 이상 도메인에 연결할 수 없습니다.
+        </p>
+      </div>
+
+      <div class="problem-grid">
+
+        <article class="problem-card">
+          <span class="problem-label">TTL</span>
+
+          <h3>
+            확정되지 않은 선 업로드 이미지의 사용 가능 시간을 제한했습니다.
+          </h3>
+
+          <ul>
+            <li>업로드 후 일정 시간 동안만 유효</li>
+            <li>만료된 imageKey 연결 차단</li>
+            <li>임시 자원의 수명 관리</li>
+          </ul>
+        </article>
+
+
+        <article class="problem-card">
+          <span class="problem-label">Consume</span>
+
+          <h3>
+            이미지 확정 시 조회와 삭제를 함께 수행했습니다.
+          </h3>
+
+          <ul>
+            <li>imageKey 일회성 사용</li>
+            <li>중복 이미지 연결 방지</li>
+            <li>서버가 발급한 이미지 여부 검증</li>
+          </ul>
+        </article>
+
+      </div>
+
+      <div class="post-note post-note-accent">
+        <strong>Server-owned URL Mapping</strong>
+
+        <p>
+          클라이언트가 최종 URL을 결정하지 않도록 하고, <br/>
+          서버가 발급한 imageKey를 통해서만 S3 URL을 확정할 수 있도록 이미지 연결의 주도권을 서버에 두었습니다.
+        </p>
+      </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         06. Orphan GC
+         ===================================================== -->
+    <section class="post-section" aria-labelledby="gc-title">
+
+      <div class="post-section-heading">
+        <span class="post-section-number">06</span>
+
+        <div>
+          <p class="post-section-kicker">Orphan Image GC</p>
+
+          <h2 id="gc-title">
+            Redis TTL만으로는 S3 객체가 삭제되지 않아 고아 이미지를 정리하는 GC를 추가했습니다.
+          </h2>
+        </div>
+      </div>
+
+      <div class="post-copy">
+        <p>
+          Redis에서 imageKey가 만료되더라도 이미 S3에 저장된 main·thumb 파일은 그대로 남습니다.
+          사용자가 선 업로드 후 모임 생성을 완료하지 않는 흐름이 반복되면
+          어디에도 연결되지 않은 고아 이미지가 누적될 수 있습니다.
+        </p>
+
+        <p>
+          이를 정리하기 위해 생성 시각을 score로 갖는 Redis ZSET 인덱스를 두고,
+          스케줄 워커가 일정 시간 이상 지난 imageKey 후보를 배치로 조회하도록 구성했습니다.
+          메타데이터가 남아 있으면 S3 객체를 삭제하고 Redis 데이터를 정리하며,
+          외부 네트워크 오류로 삭제에 실패하면 인덱스를 남겨 다음 주기에 재시도하도록 했습니다.
+        </p>
+      </div>
+
+      <div class="before-after">
+
+        <div class="before-after-column">
+          <span class="before-after-label">Candidate</span>
+
+          <ol>
+            <li>ZSET에서 오래된 imageKey 조회</li>
+            <li>Redis 메타데이터 확인</li>
+            <li>main·thumb URL 확인</li>
+          </ol>
+        </div>
+
+
+        <div class="before-after-divider" aria-hidden="true">
+          →
+        </div>
+
+
+        <div class="before-after-column before-after-column-after">
+          <span class="before-after-label">Cleanup</span>
+
+          <ol>
+            <li>S3 객체 삭제</li>
+            <li>Redis 메타 consume</li>
+            <li>ZSET 인덱스 제거</li>
+            <li>실패 시 인덱스 유지 후 재시도</li>
+          </ol>
+        </div>
+
+      </div>
+
+      <blockquote class="post-quote">
+        Redis TTL과 consume은 이미지 연결 정합성을 담당하고, <br/>
+        Orphan GC는 실제 S3에 남는 파일의 운영 비용까지 정리하는 역할로 분리했습니다.
+      </blockquote>
+
+    </section>
+
+
+    <!-- =====================================================
+         07. Format Decision
+         ===================================================== -->
+    <section class="post-section" aria-labelledby="format-title">
+
+      <div class="post-section-heading">
+        <span class="post-section-number">07</span>
+
+        <div>
+          <p class="post-section-kicker">Format Decision</p>
+
+          <h2 id="format-title">
+            압축률만 보면 AVIF가 유리했지만 운영 안정성을 고려해 WebP를 선택했습니다.
+          </h2>
+        </div>
+      </div>
+
+      <div class="post-copy">
+        <p>
+          테스트에서는 JPEG 대비 WebP가 약 70~75%,
+          AVIF가 약 90% 이상의 용량 감소를 보였습니다.
+          하지만 이미지 포맷 선택을 단순한 압축률 경쟁으로 보지 않았습니다.
+        </p>
+
+        <p>
+          서버에서 직접 이미지 변환을 수행하는 구조에서는
+          브라우저 호환성뿐 아니라 Java 이미지 처리 생태계의 성숙도,
+          인코딩 안정성, 변환 실패가 업로드 전체에 미치는 영향까지 고려해야 했습니다.
+          현재 서비스 단계에서는 최대 압축률보다 안정적인 업로드 파이프라인을 우선해 WebP를 선택했습니다.
+        </p>
+      </div>
+
+      <div class="tradeoff-card">
+
+        <div>
+          <span>AVIF</span>
+          <strong>더 높은 압축률</strong>
+
+          <p>
+            용량 측면에서는 유리하지만 서버 사이드 인코딩 의존성과
+            변환 실패 대응 비용까지 함께 고려해야 했습니다.
+          </p>
+        </div>
+
+
+        <div class="tradeoff-arrow" aria-hidden="true">
+          →
+        </div>
+
+
+        <div>
+          <span>Selected</span>
+          <strong>WebP</strong>
+
+          <p>
+            충분한 용량 절감 효과와 브라우저 호환성,
+            Java 환경에서의 변환 안정성을 기준으로 선택했습니다.
+          </p>
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         08. Nginx Troubleshooting
+         ===================================================== -->
+    <section class="post-section" aria-labelledby="nginx-title">
+
+      <div class="post-section-heading">
+        <span class="post-section-number">08</span>
+
+        <div>
+          <p class="post-section-kicker">Infrastructure Troubleshooting</p>
+
+          <h2 id="nginx-title">
+            로컬에서는 성공하던 이미지 업로드가 배포 환경에서 413으로 실패했습니다.
+          </h2>
+        </div>
+      </div>
+
+      <div class="post-copy">
+        <p>
+          Spring Boot의 multipart 최대 크기와 애플리케이션의 이미지 용량 제한을
+          20MB로 설정했지만 배포 환경에서는 큰 이미지 업로드가
+          <strong>413 Request Entity Too Large</strong>로 실패했습니다.
+        </p>
+
+        <p>
+          애플리케이션 설정을 다시 확인했지만 로컬에서는 정상적으로 업로드됐고,
+          요청이 Spring Boot에 도달하기 전에 Nginx에서 차단되고 있다는 점을 확인했습니다.
+          이후 Nginx의 요청 본문 크기와 업로드 관련 timeout 정책을 애플리케이션 정책과 맞췄습니다.
+        </p>
+      </div>
+
+      <div class="before-after">
+
+        <div class="before-after-column">
+          <span class="before-after-label">Before</span>
+
+          <ol>
+            <li>Client 이미지 업로드</li>
+            <li>Nginx 요청 크기 제한</li>
+            <li>413 응답</li>
+            <li>Spring Boot까지 도달하지 않음</li>
+          </ol>
+        </div>
+
+
+        <div class="before-after-divider" aria-hidden="true">
+          →
+        </div>
+
+
+        <div class="before-after-column before-after-column-after">
+          <span class="before-after-label">After</span>
+
+          <ol>
+            <li>client_max_body_size 20M</li>
+            <li>업로드 관련 timeout 조정</li>
+            <li>Nginx → Spring Boot 요청 전달</li>
+            <li>애플리케이션 검증 수행</li>
+          </ol>
+        </div>
+
+      </div>
+
+      <div class="post-note post-note-accent">
+        <strong>End-to-end Upload Policy</strong>
+
+        <p>
+          이미지 업로드 정책은 Spring Boot 설정만으로 완성되지 않았습니다. <br/>
+          Client → Nginx → Application까지 요청이 통과하는 모든 레이어의 제한이 일치해야 했습니다.
+        </p>
+      </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         09. Result
+         ===================================================== -->
+    <section
+        class="post-section post-section-result"
+        aria-labelledby="result-title"
+    >
+
+      <div class="post-section-heading">
+        <span class="post-section-number">09</span>
+
+        <div>
+          <p class="post-section-kicker">Result</p>
+
+          <h2 id="result-title">
+            이미지 최적화를 파일 압축이 아니라 업로드·연결·정리까지 포함한 하나의 파이프라인으로 개선했습니다.
+          </h2>
+        </div>
+      </div>
+
+      <div class="result-grid">
+
+        <article class="result-card">
+          <span>Delivery</span>
+
+          <strong>WebP + 용도별 리사이징</strong>
+
+          <p>
+            목록과 상세 화면에서 필요한 크기의 이미지를 직접 제공해
+            불필요한 원본 다운로드와 브라우저 리사이징 비용을 줄였습니다.
+          </p>
+        </article>
+
+
+        <article class="result-card">
+          <span>Consistency</span>
+
+          <strong>imageKey + TTL + consume</strong>
+
+          <p>
+            서버가 이미지 URL을 보증하고,
+            만료된 이미지와 이미 사용된 imageKey의 재사용을 차단했습니다.
+          </p>
+        </article>
+
+
+        <article class="result-card result-card-primary">
+          <span>Operation</span>
+
+          <strong>Orphan GC + Nginx 정책 정렬</strong>
+
+          <p>
+            사용되지 않은 S3 객체를 주기적으로 정리하고,
+            프록시와 애플리케이션의 업로드 제한을 일치시켜 운영 안정성을 높였습니다.
+          </p>
+        </article>
+
+      </div>
+
+
+      <div class="decision-box">
+
+        <p class="decision-label">
+          What I learned
+        </p>
+
+        <h3>
+          이미지 최적화는 압축률 하나의 문제가 아니라 파일의 전체 생명주기를 설계하는 일이었습니다.
+        </h3>
+
+        <p>
+          처음에는 WebP 변환과 리사이징이 핵심이라고 생각했지만,
+          실제 구현에서는 이미지 업로드의 실패 가능성을 도메인 트랜잭션과 분리하고,
+          서버가 이미지 URL을 보증하며,
+          사용되지 않은 파일까지 정리할 수 있어야 전체 구조가 완성되었습니다.
+        </p>
+
+        <ul>
+          <li>
+            업로드 시점에 main·thumb 파생 이미지를 생성해 조회 시 반복 비용 제거
+          </li>
+
+          <li>
+            이미지 처리와 모임 생성·수정 트랜잭션을 Pre-upload로 분리
+          </li>
+
+          <li>
+            URL 대신 imageKey를 사용해 이미지 연결의 주도권을 서버가 보유
+          </li>
+
+          <li>
+            Redis TTL + consume으로 임시 자원의 유효기간과 일회성 사용 보장
+          </li>
+
+          <li>
+            Orphan GC를 통해 Redis뿐 아니라 실제 S3 객체의 생명주기까지 관리
+          </li>
+
+          <li>
+            이미지 업로드 장애는 Application뿐 아니라 Nginx 등 전체 요청 경로를 함께 점검
+          </li>
+        </ul>
+
+      </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         Footer
+         ===================================================== -->
+    <footer class="post-footer">
+
+      <a
+          class="post-footer-link"
+          href="../../../index.html#experience"
+      >
+        ← 기술 경험 목록으로 돌아가기
+      </a>
+
+      <p>
+        © 2026 Lim Daeil
+      </p>
+
+    </footer>
+
+  </article>
+</main>
+
+</body>
+</html>

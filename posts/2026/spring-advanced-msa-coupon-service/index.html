@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="ko" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Spring 심화 과정 수료 및 MSA 기반 쿠폰 서비스 설계·구현 — 임대일</title>
+
+  <meta
+      name="description"
+      content="Java·Spring 기반 백엔드 심화 과정에서 MSA, 인증·인가, Redis 분산 락, Kafka 비동기 처리, 부하 테스트와 모니터링을 학습하고 쿠폰 서비스에 적용한 경험입니다."
+  >
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+  <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=Montserrat:wght@600;700;800;900&family=Roboto:wght@400;500;700;900&display=swap"
+  >
+
+  <link rel="stylesheet" href="../../../assets/css/main.css">
+  <link rel="stylesheet" href="../../../assets/css/post.css">
+</head>
+
+<body class="post-page">
+
+<div class="post-topbar">
+  <div class="post-topbar-inner">
+    <a class="post-brand" href="../../../index.html">임대일.dev</a>
+
+    <a class="post-back-link" href="../../../index.html#projects">
+      Portfolio로 돌아가기
+    </a>
+  </div>
+</div>
+
+
+<main class="post-main">
+  <article class="post-container">
+
+    <!-- =====================================================
+         Hero
+         ===================================================== -->
+    <header class="post-hero">
+
+      <div class="post-breadcrumb">
+        <span>Education · Project</span>
+        <span aria-hidden="true">/</span>
+        <span>Spring · MSA · Concurrency</span>
+      </div>
+
+      <h1 class="post-title">
+        Spring 심화 과정 수료 및<br class="desktop-only">
+        MSA 기반 쿠폰 서비스 설계·구현
+      </h1>
+
+      <p class="post-lead">
+        Java·Spring 기반 백엔드 개발부터 MSA·인증·동시성·비동기 처리·모니터링까지
+        실무 중심의 심화 과정을 이수했습니다.
+        이후 4인 백엔드 팀 프로젝트에서 Spring Cloud 기반 MSA 환경의 회원·쿠폰 도메인을 담당하며,
+        Redis 분산 락과 Kafka를 활용한 쿠폰 발급 구조를 설계하고 JMeter 부하 테스트로 검증했습니다.
+      </p>
+
+      <div class="post-meta">
+        <span>스파르타코딩클럽 내일배움캠프 Spring 심화 3기</span>
+        <span aria-hidden="true">·</span>
+        <time datetime="2025-02-01">
+          2025.02.01 ~ 2025.04.25
+        </time>
+        <span aria-hidden="true">·</span>
+        <span>Backend 4명</span>
+      </div>
+
+      <div class="post-tags" aria-label="사용 기술">
+        <span class="tag tag-java">Java</span>
+        <span class="tag tag-spring">Spring Boot</span>
+        <span class="tag tag-spring-security">Spring Security</span>
+        <span class="tag tag-jwt">JWT</span>
+        <span class="tag tag-jpa">JPA</span>
+        <span class="tag tag-querydsl">QueryDSL</span>
+        <span class="tag tag-spring-cloud">Spring Cloud</span>
+        <span class="tag tag-eureka">Eureka</span>
+        <span class="tag tag-redis">Redis</span>
+        <span class="tag tag-kafka">Kafka</span>
+        <span class="tag tag-jmeter">JMeter</span>
+        <span class="tag tag-prometheus">Prometheus</span>
+        <span class="tag tag-grafana">Grafana</span>
+      </div>
+
+    </header>
+
+
+    <!-- =====================================================
+         01. Overview
+         ===================================================== -->
+    <section class="post-section" aria-labelledby="overview-title">
+
+      <div class="post-section-heading">
+        <span class="post-section-number">01</span>
+
+        <div>
+          <p class="post-section-kicker">Overview</p>
+
+          <h2 id="overview-title">
+            학습한 기술을 팀 프로젝트에서 직접 설계하고 검증하는 과정이었습니다.
+          </h2>
+        </div>
+      </div>
+
+      <div class="post-copy">
+        <p>
+          Spring 심화 3기 과정에서는 단순한 CRUD 구현을 넘어
+          <strong>서비스를 어떻게 분리하고, 트래픽을 어떻게 제어하며,
+            장애를 어떻게 관찰할 것인가</strong>를 중심으로 백엔드 개발을 학습했습니다.
+        </p>
+
+        <p>
+          Java·Spring Boot를 기반으로 JPA·QueryDSL, Spring Security·JWT,
+          Redis, 메시지 큐, Spring Cloud, 모니터링 등을 학습했고,
+          마지막 프로젝트에서는 이를 Spring Cloud 기반 MSA 환경의
+          회원·쿠폰 서비스에 직접 적용했습니다.
+        </p>
+      </div>
+
+      <div class="metric-grid">
+        <div class="metric-card">
+          <strong>약 3개월</strong>
+          <span>Spring 심화 교육 과정</span>
+        </div>
+
+        <div class="metric-card">
+          <strong>진행 기간: 4주</strong>
+          <span>MSA 팀 프로젝트 전체 기간</span>
+        </div>
+
+        <div class="metric-card">
+          <strong>구성원: 4명</strong>
+          <span>Backend Team</span>
+        </div>
+
+        <div class="metric-card metric-card-highlight">
+          <strong>100,000 데이터</strong>
+          <span>JMeter 부하 테스트 요청 규모</span>
+        </div>
+      </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         02. Learning
+         ===================================================== -->
+    <section class="post-section" aria-labelledby="learning-title">
+
+      <div class="post-section-heading">
+        <span class="post-section-number">02</span>
+
+        <div>
+          <p class="post-section-kicker">Learning</p>
+
+          <h2 id="learning-title">
+            Backend Core부터 MSA·성능·운영까지 서비스 전체 흐름을 학습했습니다.
+          </h2>
+        </div>
+      </div>
+
+      <div class="problem-grid">
+
+        <article class="problem-card">
+          <span class="problem-label">Backend Core</span>
+
+          <h3>Spring 기반 API와 데이터 접근 계층</h3>
+
+          <ul>
+            <li>Java·Spring Boot 기반 REST API 설계 및 구현</li>
+            <li>JPA·QueryDSL 기반 데이터 접근과 조회 최적화</li>
+            <li>Spring Security·JWT 기반 인증·인가 구조</li>
+          </ul>
+        </article>
+
+
+        <article class="problem-card">
+          <span class="problem-label">Architecture</span>
+
+          <h3>MSA와 서비스 간 통신 구조</h3>
+
+          <ul>
+            <li>MSA 기본 개념과 서비스 분리 기준 학습</li>
+            <li>Spring Cloud·Eureka 기반 Service Discovery</li>
+            <li>서비스 간 통신과 확장성을 고려한 구조 설계</li>
+          </ul>
+        </article>
+
+
+        <article class="problem-card">
+          <span class="problem-label">Performance</span>
+
+          <h3>캐시·동시성·비동기 처리</h3>
+
+          <ul>
+            <li>Redis 캐시 활용 전략</li>
+            <li>분산 환경의 Lock과 동시성 제어</li>
+            <li>메시지 큐를 활용한 비동기 처리와 부하 분산</li>
+          </ul>
+        </article>
+
+
+        <article class="problem-card">
+          <span class="problem-label">Operations</span>
+
+          <h3>배포 이후를 고려한 운영 관점</h3>
+
+          <ul>
+            <li>GitHub 기반 CI/CD 파이프라인 구성 실습</li>
+            <li>Prometheus·Grafana 기반 모니터링</li>
+            <li>시큐어 코딩과 장애 예방 관점 학습</li>
+          </ul>
+        </article>
+
+      </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         03. Project
+         ===================================================== -->
+    <section class="post-section" aria-labelledby="project-title">
+
+      <div class="post-section-heading">
+        <span class="post-section-number">03</span>
+
+        <div>
+          <p class="post-section-kicker">Team Project</p>
+
+          <h2 id="project-title">
+            Spring Cloud 기반 MSA 환경에서 회원·쿠폰 도메인을 담당했습니다.
+          </h2>
+        </div>
+      </div>
+
+      <div class="post-copy">
+        <p>
+          교육 후반에는 Backend 4명이 팀을 구성해 MSA 기반 서비스를 구현했습니다.
+          이 과정에서 회원과 쿠폰 도메인을 담당하고,
+          인증·인가부터 쿠폰 발급 동시성 제어까지 핵심 백엔드 기능을 구현했습니다.
+        </p>
+
+        <p>
+          단순히 서비스를 여러 개로 나누는 데 그치지 않고
+          Gateway, Service Discovery, 공통 응답 규격, 모니터링 등
+          <strong>분산된 서비스가 하나의 시스템으로 동작하기 위해 필요한 기반</strong>도 함께 구성했습니다.
+        </p>
+      </div>
+
+      <div class="change-list">
+
+        <article class="change-item">
+          <span class="change-index">01</span>
+
+          <div>
+            <h3>회원·쿠폰 도메인</h3>
+            <p>
+              회원과 쿠폰 도메인의 모델 및 비즈니스 로직을 설계하고
+              서비스별 책임을 분리했습니다.
+            </p>
+          </div>
+        </article>
+
+
+        <article class="change-item">
+          <span class="change-index">02</span>
+
+          <div>
+            <h3>Authentication &amp; Authorization</h3>
+            <p>
+              Spring Security·JWT 기반 인증 체계와 RBAC를 구현해
+              사용자 권한에 따른 접근 제어 구조를 구성했습니다.
+            </p>
+          </div>
+        </article>
+
+
+        <article class="change-item">
+          <span class="change-index">03</span>
+
+          <div>
+            <h3>Gateway &amp; Discovery</h3>
+            <p>
+              Spring Cloud Gateway와 Eureka를 활용해
+              API 라우팅과 Service Discovery 환경을 구축했습니다.
+            </p>
+          </div>
+        </article>
+
+      </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         04. Concurrency
+         ===================================================== -->
+    <section class="post-section" aria-labelledby="concurrency-title">
+
+      <div class="post-section-heading">
+        <span class="post-section-number">04</span>
+
+        <div>
+          <p class="post-section-kicker">Concurrency</p>
+
+          <h2 id="concurrency-title">
+            쿠폰 발급 경쟁을 Redis 분산 락으로 제어했습니다.
+          </h2>
+        </div>
+      </div>
+
+      <div class="post-copy">
+        <p>
+          한정된 수량의 쿠폰에 다수 사용자가 동시에 접근하면
+          여러 애플리케이션 인스턴스에서 같은 쿠폰 수량을 동시에 변경할 수 있습니다.
+          단일 JVM의 <code>synchronized</code>만으로는 MSA·다중 인스턴스 환경의
+          동시성을 보장할 수 없기 때문에 Redis 기반 분산 락을 적용했습니다.
+        </p>
+
+        <p>
+          Redisson을 이용해 쿠폰 발급 임계 영역에 대한 락을 획득한 뒤
+          발급 가능 여부 확인과 수량 변경을 수행하도록 구성하여,
+          동시에 요청이 유입되더라도 쿠폰 수량을 기준으로 일관된 발급 흐름을 유지하도록 설계했습니다.
+        </p>
+      </div>
+
+      <div class="before-after">
+
+        <div class="before-after-column">
+          <span class="before-after-label">Problem</span>
+
+          <ol>
+            <li>동일 쿠폰에 동시 발급 요청</li>
+            <li>여러 인스턴스에서 동일 데이터 접근</li>
+            <li>발급 가능 여부 동시 검증</li>
+            <li>쿠폰 수량 정합성 위험</li>
+          </ol>
+        </div>
+
+        <div class="before-after-divider" aria-hidden="true">→</div>
+
+        <div class="before-after-column before-after-column-after">
+          <span class="before-after-label">Applied</span>
+
+          <ol>
+            <li>Redis / Redisson Lock</li>
+            <li>분산 환경 공통 Lock 획득</li>
+            <li>발급 임계 영역 직렬화</li>
+            <li>쿠폰 발급 동시성 제어</li>
+          </ol>
+        </div>
+
+      </div>
+
+      <blockquote class="post-quote">
+        동시성 제어의 범위가 단일 프로세스를 넘어가는 순간, 애플리케이션 인스턴스들이 공유할 수 있는 동기화 수단이 필요했습니다.
+      </blockquote>
+
+    </section>
+
+
+    <!-- =====================================================
+         05. Kafka
+         ===================================================== -->
+    <section class="post-section" aria-labelledby="kafka-title">
+
+      <div class="post-section-heading">
+        <span class="post-section-number">05</span>
+
+        <div>
+          <p class="post-section-kicker">Async Processing</p>
+
+          <h2 id="kafka-title">
+            Kafka 기반 비동기 처리로 대량 쿠폰 발급 요청을 분리했습니다.
+          </h2>
+        </div>
+      </div>
+
+      <div class="post-copy">
+        <p>
+          쿠폰 발급 요청을 동기적으로 모두 처리하면 요청량이 증가할수록
+          API 서버의 처리 부하도 함께 증가합니다.
+          이를 완화하기 위해 Kafka 기반 비동기 처리 구조를 적용해
+          요청 수신과 실제 발급 처리를 분리했습니다.
+        </p>
+
+        <p>
+          메시지 큐를 통해 요청을 전달함으로써 대량 요청을 즉시 처리해야 하는 부담을 줄이고,
+          Consumer가 메시지를 처리하는 구조를 경험했습니다.
+          이 과정에서 메시지 기반 시스템이 단순한 비동기 호출이 아니라
+          서비스 간 결합도와 트래픽 처리 방식 자체를 바꾸는 아키텍처라는 점을 학습했습니다.
+        </p>
+      </div>
+
+      <div class="tradeoff-card">
+
+        <div>
+          <span>Synchronous</span>
+          <strong>Request → Issue → Response</strong>
+          <p>
+            요청 처리와 쿠폰 발급 작업이 직접 결합되어
+            대량 요청이 API 처리 부하로 이어집니다.
+          </p>
+        </div>
+
+        <div class="tradeoff-arrow" aria-hidden="true">→</div>
+
+        <div>
+          <span>Asynchronous</span>
+          <strong>Request → Kafka → Consumer</strong>
+          <p>
+            요청 수신과 발급 처리를 분리해
+            메시지 큐를 통한 비동기 처리와 부하 분산 구조를 적용했습니다.
+          </p>
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         06. Load Test
+         ===================================================== -->
+    <section class="post-section" aria-labelledby="load-title">
+
+      <div class="post-section-heading">
+        <span class="post-section-number">06</span>
+
+        <div>
+          <p class="post-section-kicker">Load Test</p>
+
+          <h2 id="load-title">
+            JMeter 10만 건 부하 테스트로 대량 요청 환경의 쿠폰 발급 구조를 검증했습니다.
+          </h2>
+        </div>
+      </div>
+
+      <div class="post-copy">
+        <p>
+          구현이 완료된 뒤에는 정상적인 단일 요청만 확인하는 데 그치지 않고
+          JMeter를 활용해 총 10만 건 규모의 부하 테스트를 수행했습니다.
+          이를 통해 대량 요청 상황에서도 쿠폰 발급 구조가 안정적으로 동작하는지 검증했습니다.
+        </p>
+
+        <p>
+          이 경험을 통해 동시성 제어는 Lock을 적용하는 것으로 끝나는 것이 아니라,
+          실제 부하 상황을 만들어 데이터 정합성과 시스템 동작을 함께 확인해야 한다는 점을 배웠습니다.
+        </p>
+      </div>
+
+      <div class="metric-grid">
+        <div class="metric-card metric-card-highlight">
+          <strong>100,000</strong>
+          <span>JMeter 부하 테스트</span>
+        </div>
+
+        <div class="metric-card">
+          <strong>Redis</strong>
+          <span>분산 락 기반 동시성 제어</span>
+        </div>
+
+        <div class="metric-card">
+          <strong>Kafka</strong>
+          <span>비동기 발급 처리</span>
+        </div>
+
+        <div class="metric-card">
+          <strong>MSA</strong>
+          <span>분산 서비스 환경 검증</span>
+        </div>
+      </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         07. MSA Standard
+         ===================================================== -->
+    <section class="post-section" aria-labelledby="standard-title">
+
+      <div class="post-section-heading">
+        <span class="post-section-number">07</span>
+
+        <div>
+          <p class="post-section-kicker">MSA Standard</p>
+
+          <h2 id="standard-title">
+            서비스가 분리될수록 공통 통신 규격이 중요했습니다.
+          </h2>
+        </div>
+      </div>
+
+      <div class="post-copy">
+        <p>
+          MSA에서는 각 서비스가 독립적으로 개발되기 때문에
+          API 응답과 오류 표현 방식이 제각각이면 서비스 간 통신과 클라이언트 처리가 복잡해집니다.
+          팀에서는 공통 DTO와 에러 응답 포맷, API 버전 관리 규칙을 정의했습니다.
+        </p>
+
+        <p>
+          이를 통해 개별 서비스의 내부 구현은 분리하면서도
+          외부에 노출되는 인터페이스에는 일관된 규칙을 적용하고,
+          서비스 간 협업과 유지보수성을 높이는 방향을 경험했습니다.
+        </p>
+      </div>
+
+      <div class="change-list">
+
+        <article class="change-item">
+          <span class="change-index">01</span>
+          <div>
+            <h3>Common DTO</h3>
+            <p>서비스 간 전달되는 데이터 구조의 공통 규칙을 정의했습니다.</p>
+          </div>
+        </article>
+
+        <article class="change-item">
+          <span class="change-index">02</span>
+          <div>
+            <h3>Error Response</h3>
+            <p>에러 코드와 응답 포맷을 통일해 서비스별 오류 표현 차이를 줄였습니다.</p>
+          </div>
+        </article>
+
+        <article class="change-item">
+          <span class="change-index">03</span>
+          <div>
+            <h3>API Versioning</h3>
+            <p>API 버전 관리 규칙을 정의해 변경에 따른 서비스 간 영향을 관리했습니다.</p>
+          </div>
+        </article>
+
+      </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         08. Monitoring
+         ===================================================== -->
+    <section class="post-section" aria-labelledby="monitoring-title">
+
+      <div class="post-section-heading">
+        <span class="post-section-number">08</span>
+
+        <div>
+          <p class="post-section-kicker">Monitoring</p>
+
+          <h2 id="monitoring-title">
+            구현 이후의 상태를 확인할 수 있도록 모니터링과 알림 환경을 구성했습니다.
+          </h2>
+        </div>
+      </div>
+
+      <div class="post-copy">
+        <p>
+          분산된 서비스는 특정 인스턴스의 장애나 자원 이상을
+          애플리케이션 로그만으로 빠르게 파악하기 어렵습니다.
+          Prometheus로 메트릭을 수집하고 Grafana를 통해 시각화하는
+          기본 모니터링 환경을 구성했습니다.
+        </p>
+
+        <p>
+          여기에 Slack 알림을 연계해 서비스 상태와 장애 징후를 확인할 수 있도록 구성하면서,
+          백엔드 개발의 범위를 기능 구현에서 끝내지 않고
+          <strong>배포 이후 서비스 상태를 관찰하는 운영 관점</strong>까지 확장했습니다.
+        </p>
+      </div>
+
+      <div class="before-after">
+        <div class="before-after-column">
+          <span class="before-after-label">Metrics</span>
+          <ol>
+            <li>Application Metrics</li>
+            <li>Prometheus 수집</li>
+            <li>시계열 데이터 저장</li>
+          </ol>
+        </div>
+
+        <div class="before-after-divider" aria-hidden="true">→</div>
+
+        <div class="before-after-column before-after-column-after">
+          <span class="before-after-label">Observability</span>
+          <ol>
+            <li>Grafana Dashboard</li>
+            <li>서비스 상태 확인</li>
+            <li>Slack 장애 알림 연계</li>
+          </ol>
+        </div>
+      </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         09. Result
+         ===================================================== -->
+    <section
+        class="post-section post-section-result"
+        aria-labelledby="result-title"
+    >
+
+      <div class="post-section-heading">
+        <span class="post-section-number">09</span>
+
+        <div>
+          <p class="post-section-kicker">Result</p>
+
+          <h2 id="result-title">
+            개별 기술의 사용법보다 분산 환경에서 기술이 필요한 이유를 이해하는 경험이었습니다.
+          </h2>
+        </div>
+      </div>
+
+      <div class="result-grid">
+
+        <article class="result-card">
+          <span>Architecture</span>
+          <strong>Spring Cloud MSA</strong>
+          <p>
+            Gateway·Eureka를 기반으로 서비스 라우팅과
+            Service Discovery 구조를 구성했습니다.
+          </p>
+        </article>
+
+        <article class="result-card">
+          <span>Concurrency</span>
+          <strong>Redis + Kafka</strong>
+          <p>
+            분산 락과 비동기 처리를 활용해
+            쿠폰 발급의 동시성과 대량 요청 처리 구조를 구현했습니다.
+          </p>
+        </article>
+
+        <article class="result-card result-card-primary">
+          <span>Validation</span>
+          <strong>JMeter 10만 건</strong>
+          <p>
+            대량 요청 환경을 직접 구성해
+            구현한 쿠폰 발급 구조의 안정성을 검증했습니다.
+          </p>
+        </article>
+
+      </div>
+
+
+      <div class="decision-box">
+
+        <p class="decision-label">What I learned</p>
+
+        <h3>
+          MSA는 서비스를 나누는 기술이 아니라 분산된 시스템의 복잡성을 관리하는 설계라는 점을 배웠습니다.
+        </h3>
+
+        <p>
+          Spring Cloud, Redis, Kafka, Prometheus 같은 기술을 개별적으로 사용하는 것보다
+          어떤 문제를 해결하기 위해 도입하는지 이해하는 것이 중요했습니다.
+          특히 쿠폰 발급 기능을 구현하며 동시성, 비동기 처리, 부하 테스트를 하나의 흐름으로 경험했고,
+          서비스가 분산될수록 통신 규격과 관측 가능성 역시 중요한 설계 요소가 된다는 점을 확인했습니다.
+        </p>
+
+        <ul>
+          <li>Spring Security·JWT·RBAC 기반 인증/인가 체계 구현</li>
+          <li>Spring Cloud Gateway·Eureka 기반 MSA 라우팅 및 Service Discovery 구성</li>
+          <li>Redis(Redisson) 분산 락 기반 쿠폰 발급 동시성 제어</li>
+          <li>Kafka 기반 비동기 처리와 대량 요청 부하 분산 구조 경험</li>
+          <li>JMeter 10만 건 부하 테스트를 통한 쿠폰 발급 구조 검증</li>
+          <li>공통 DTO·에러 응답·API 버전 규칙을 통한 서비스 통신 표준화</li>
+          <li>Prometheus·Grafana·Slack 기반 모니터링 및 알림 환경 구축</li>
+        </ul>
+
+      </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         Footer
+         ===================================================== -->
+    <footer class="post-footer">
+
+      <a
+          class="post-footer-link"
+          href="../../../index.html#projects"
+      >
+        ← 프로젝트 · 교육 목록으로 돌아가기
+      </a>
+
+      <p>© 2026 Lim Daeil</p>
+
+    </footer>
+
+  </article>
+</main>
+
+</body>
+</html>

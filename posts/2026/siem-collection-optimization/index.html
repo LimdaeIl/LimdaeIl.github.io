@@ -7,7 +7,7 @@
   <title>방화벽 월간보고서 데이터 수집 안정화 및 성능 개선 — 임대일</title>
   <meta
       name="description"
-      content="FortiSIEM·PRTG 기반 월간보고서 데이터 수집 과정에서 데이터 정합성, 재시도, 비동기 동시성 문제를 분석하고 개선한 경험입니다."
+      content="FortiSIEM·PRTG 기반 로그 데이터 분석 월간보고서 데이터 수집 과정에서 데이터 정합성, 재시도, 비동기 동시성 문제를 분석하고 개선한 경험입니다."
   >
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -39,12 +39,12 @@
       </div>
 
       <h1 class="post-title">
-        방화벽 월간보고서 데이터 수집<br class="desktop-only">
-        안정화 및 성능 개선
+        수만 건 규모 데이터 수집에서 <br class="desktop-only">
+        외부 API 안정성과 처리 성능 개선 경험
       </h1>
 
       <p class="post-lead">
-        FortiSIEM·PRTG 기반 월간보고서 데이터 수집 과정에서 발생하던
+        FortiSIEM·PRTG 기반의 로그 데이터 분석 월간보고서 생성을 위해 데이터 수집 과정에서 발생하던
         데이터 누락, 과도한 재시도, 외부 시스템 부하 문제를 분석하고
         조회 로직과 요청 정책, 비동기 동시성을 개선했습니다.
       </p>
@@ -335,7 +335,7 @@
       <div class="post-note post-note-accent">
         <strong>Bounded Concurrency</strong>
         <p>
-          비동기 처리를 제거한 것이 아니라, 동시에 처리할 인터페이스를 최대 3개로 제한했습니다. </br>
+          비동기 처리를 제거한 것이 아니라, 동시에 처리할 인터페이스를 최대 3개로 제한했습니다. <br/>
           병렬성은 유지하면서 외부 시스템이 감당할 수 있는 범위 안에서 처리량을 제어했습니다.
         </p>
       </div>

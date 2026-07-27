@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="ko" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Redis 캐시 기반 상품 상세 조회 성능 최적화 — 임대일</title>
+
+  <meta
+      name="description"
+      content="상품 상세 조회 API에 Redis Cache-Aside 전략과 트랜잭션 연계 캐시 무효화를 적용하고, k6 200 RPS 부하 테스트로 평균 응답시간을 약 67% 단축한 경험입니다."
+  >
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+  <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=Montserrat:wght@600;700;800;900&family=Roboto:wght@400;500;700;900&display=swap"
+  >
+
+  <link rel="stylesheet" href="../../../assets/css/main.css">
+  <link rel="stylesheet" href="../../../assets/css/post.css">
+</head>
+
+<body class="post-page">
+
+<div class="post-topbar">
+  <div class="post-topbar-inner">
+    <a class="post-brand" href="../../../index.html">임대일.dev</a>
+
+    <a class="post-back-link" href="../../../index.html#experience">
+      Portfolio로 돌아가기
+    </a>
+  </div>
+</div>
+
+
+<main class="post-main">
+  <article class="post-container">
+
+    <!-- =====================================================
+         Hero
+         ===================================================== -->
+    <header class="post-hero">
+
+      <div class="post-breadcrumb">
+        <span>Technical Experience</span>
+        <span aria-hidden="true">/</span>
+        <span>Backend · Cache · Performance</span>
+      </div>
+
+      <h1 class="post-title">
+        Redis 캐시 기반 상품 상세 조회<br class="desktop-only">
+        성능 최적화
+      </h1>
+
+      <p class="post-lead">
+        읽기 요청이 집중되는 상품 상세 조회 API에 Redis Cache-Aside 전략을 적용했습니다.
+        단순한 응답 속도 개선에 그치지 않고 캐시와 DB의 데이터 정합성,
+        트랜잭션 커밋과 캐시 무효화 시점까지 함께 설계하고,
+        k6 200 RPS 부하 테스트를 통해 개선 효과를 수치로 검증했습니다.
+      </p>
+
+      <div class="post-meta">
+        <span>카테고리</span>
+        <span aria-hidden="true">:</span>
+        <span>Backend / Cache / Performance</span>
+        <span aria-hidden="true">·</span>
+        <time datetime="2026">
+          2025 ~ 2026
+        </time>
+      </div>
+
+      <div class="post-tags" aria-label="사용 기술">
+        <span class="tag tag-java">Java</span>
+        <span class="tag tag-spring">Spring Boot</span>
+        <span class="tag tag-jpa">JPA</span>
+        <span class="tag tag-mysql">MySQL</span>
+        <span class="tag tag-redis">Redis</span>
+        <span class="tag tag-k6">k6</span>
+      </div>
+
+    </header>
+
+
+    <!-- =====================================================
+         01. Overview
+         ===================================================== -->
+    <section class="post-section" aria-labelledby="overview-title">
+
+      <div class="post-section-heading">
+        <span class="post-section-number">01</span>
+
+        <div>
+          <p class="post-section-kicker">Overview</p>
+
+          <h2 id="overview-title">
+            자주 조회되지만 거의 변경되지 않는 상품 정보가 매번 DB까지 내려가고 있었습니다.
+          </h2>
+        </div>
+      </div>
+
+      <div class="post-copy">
+        <p>
+          상품 상세 조회는 메인 페이지, 검색, 장바구니 등 여러 사용자 흐름에서 반복적으로 호출되는
+          대표적인 Read-heavy API입니다. 반면 상품명, 가격, 기본 설명과 같은 정보는
+          조회 빈도에 비해 수정 빈도가 낮았습니다.
+        </p>
+
+        <p>
+          기존 구조에서는 캐시 레이어가 없어 모든 요청이 MySQL까지 전달됐습니다.
+          현재 트래픽에서는 큰 문제가 없어 보일 수 있지만 이벤트나 인기 상품에 요청이 집중되면
+          조회 트래픽이 DB Connection과 CPU 자원을 지속적으로 사용하고,
+          같은 DB를 사용하는 주문·결제 같은 핵심 트랜잭션에도 지연이 전파될 수 있다고 판단했습니다.
+        </p>
+      </div>
+
+      <div class="metric-grid">
+
+        <div class="metric-card">
+          <strong>200 RPS</strong>
+          <span>캐시 적용 전후 비교에 사용한 일정 요청 부하</span>
+        </div>
+
+        <div class="metric-card">
+          <strong>3 min</strong>
+          <span>No Cache / Warm Cache 각각의 측정 시간</span>
+        </div>
+
+        <div class="metric-card">
+          <strong>5.19 ms</strong>
+          <span>캐시 미적용 상태의 평균 응답시간</span>
+        </div>
+
+        <div class="metric-card metric-card-highlight">
+          <strong>1.71 ms</strong>
+          <span>Warm Cache 적용 후 평균 응답시간</span>
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         02. Problem
+         ===================================================== -->
+    <section class="post-section" aria-labelledby="problem-title">
+
+      <div class="post-section-heading">
+        <span class="post-section-number">02</span>
+
+        <div>
+          <p class="post-section-kicker">Problem</p>
+
+          <h2 id="problem-title">
+            캐시를 추가하는 것보다 DB와 캐시의 정합성을 어떻게 유지할지가 더 중요한 문제였습니다.
+          </h2>
+        </div>
+      </div>
+
+      <div class="problem-grid">
+
+        <article class="problem-card">
+          <span class="problem-label">Read Traffic</span>
+
+          <h3>
+            반복되는 조회 요청이 모두 DB Connection을 사용했습니다.
+          </h3>
+
+          <ul>
+            <li>상품 상세 조회는 높은 호출 빈도를 가진 API</li>
+            <li>동일한 상품 데이터가 반복적으로 조회됨</li>
+            <li>인기 상품에 요청이 몰릴수록 DB 읽기 부하 증가</li>
+            <li>주문·결제 등 다른 DB 기능까지 영향 가능</li>
+          </ul>
+        </article>
+
+
+        <article class="problem-card">
+          <span class="problem-label">Stale Data</span>
+
+          <h3>
+            캐시의 상품 정보가 DB보다 오래된 값이 될 수 있었습니다.
+          </h3>
+
+          <ul>
+            <li>상품 가격·설명 수정 후 기존 캐시가 남을 수 있음</li>
+            <li>DB와 Redis 데이터 불일치 가능</li>
+            <li>가격과 같은 비즈니스 데이터의 Stale Data는 위험</li>
+            <li>캐시 무효화 시점까지 트랜잭션과 함께 고려 필요</li>
+          </ul>
+        </article>
+
+      </div>
+
+      <blockquote class="post-quote">
+        캐시의 목표를 “무조건 빠르게 반환하는 것”이 아니라,
+        DB를 Single Source of Truth로 유지하면서 반복 조회 부하를 흡수하는 것으로 정의했습니다.
+      </blockquote>
+
+    </section>
+
+
+    <!-- =====================================================
+         03. Cache Strategy
+         ===================================================== -->
+    <section class="post-section" aria-labelledby="strategy-title">
+
+      <div class="post-section-heading">
+        <span class="post-section-number">03</span>
+
+        <div>
+          <p class="post-section-kicker">Cache Strategy</p>
+
+          <h2 id="strategy-title">
+            필요한 상품만 캐싱하고 Redis 장애 시 DB로 돌아갈 수 있도록 Cache-Aside를 선택했습니다.
+          </h2>
+        </div>
+      </div>
+
+      <div class="post-copy">
+        <p>
+          Read-Through, Write-Through, Write-Behind 등의 캐시 패턴을 검토한 뒤
+          애플리케이션이 Redis를 먼저 조회하고 Cache Miss 시 DB를 조회하는
+          Cache-Aside(Lazy Loading) 방식을 선택했습니다.
+        </p>
+
+        <p>
+          모든 상품을 미리 캐싱하지 않고 실제 요청이 발생한 상품만 Redis에 적재할 수 있어
+          메모리를 효율적으로 사용할 수 있고, Redis에 문제가 생겨도 DB 조회로
+          비즈니스 로직을 유지할 수 있다는 점을 중요하게 봤습니다.
+        </p>
+      </div>
+
+      <div class="before-after">
+
+        <div class="before-after-column">
+          <span class="before-after-label">No Cache</span>
+
+          <ol>
+            <li>상품 상세 조회 요청</li>
+            <li>매 요청마다 MySQL 조회</li>
+            <li>DB Connection 사용</li>
+            <li>동일 데이터도 반복 조회</li>
+          </ol>
+        </div>
+
+
+        <div class="before-after-divider" aria-hidden="true">
+          →
+        </div>
+
+
+        <div class="before-after-column before-after-column-after">
+          <span class="before-after-label">Cache-Aside</span>
+
+          <ol>
+            <li>Redis에서 상품 ID 조회</li>
+            <li>Cache Hit면 즉시 반환</li>
+            <li>Cache Miss일 때만 DB 조회</li>
+            <li>조회 결과를 Redis에 저장</li>
+          </ol>
+        </div>
+
+      </div>
+
+
+      <div class="change-list">
+
+        <article class="change-item">
+          <span class="change-index">01</span>
+
+          <div>
+            <h3>TTL 1시간 설정</h3>
+
+            <p>
+              캐시 데이터가 영구적으로 유지되지 않도록 1시간 TTL을 설정하여
+              캐시 무효화 누락 등에 대비한 보조 안전장치를 두었습니다.
+            </p>
+          </div>
+        </article>
+
+
+        <article class="change-item">
+          <span class="change-index">02</span>
+
+          <div>
+            <h3>Null 값 캐싱 방지</h3>
+
+            <p>
+              존재하지 않는 상품의 조회 결과를 캐싱하지 않도록 구성해,
+              이후 동일 ID로 상품이 생성됐을 때 TTL 만료 전까지 조회되지 않는
+              부작용을 방지했습니다.
+            </p>
+          </div>
+        </article>
+
+
+        <article class="change-item">
+          <span class="change-index">03</span>
+
+          <div>
+            <h3>JSON 직렬화 적용</h3>
+
+            <p>
+              Redis 데이터를 사람이 확인할 수 있는 JSON으로 저장하여
+              Redis CLI를 통한 운영 확인과 디버깅이 쉽도록 구성했습니다.
+            </p>
+          </div>
+        </article>
+
+      </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         04. Cache Consistency
+         ===================================================== -->
+    <section class="post-section" aria-labelledby="consistency-title">
+
+      <div class="post-section-heading">
+        <span class="post-section-number">04</span>
+
+        <div>
+          <p class="post-section-kicker">Cache Consistency</p>
+
+          <h2 id="consistency-title">
+            상품 수정 시 캐시를 직접 갱신하지 않고 삭제하여 DB를 기준 데이터로 유지했습니다.
+          </h2>
+        </div>
+      </div>
+
+      <div class="post-copy">
+        <p>
+          상품이 수정됐을 때 Redis의 값을 함께 Update하는 방식도 가능하지만,
+          서비스 로직이 캐시 데이터 구조까지 알아야 하므로 결합도가 높아집니다.
+          또한 DB Update는 성공했지만 Redis Update만 실패하면 두 저장소의 값을
+          다시 맞춰야 하는 추가적인 정합성 문제가 발생합니다.
+        </p>
+
+        <p>
+          따라서 상품 수정 시 해당 상품의 캐시를 Evict하고,
+          다음 조회에서 DB의 최신 값을 다시 캐싱하도록 구성했습니다.
+          Redis는 조회 최적화를 위한 파생 데이터로 사용하고 MySQL을
+          Single Source of Truth로 유지했습니다.
+        </p>
+      </div>
+
+      <div class="tradeoff-card">
+
+        <div>
+          <span>Option A</span>
+          <strong>Cache Update</strong>
+
+          <p>
+            캐시를 즉시 최신 상태로 만들 수 있지만 서비스 로직과 캐시 구조의 결합도가 높아지고,
+            DB와 Redis 중 한쪽만 실패할 경우 정합성 처리도 복잡해집니다.
+          </p>
+        </div>
+
+
+        <div class="tradeoff-arrow" aria-hidden="true">
+          →
+        </div>
+
+
+        <div>
+          <span>Selected</span>
+          <strong>Cache Evict</strong>
+
+          <p>
+            상품 수정 후 캐시를 삭제하고 다음 조회에서 DB의 최신 데이터를 재적재하여
+            데이터 기준점을 MySQL 하나로 유지했습니다.
+          </p>
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         05. Transaction Awareness
+         ===================================================== -->
+    <section class="post-section" aria-labelledby="transaction-title">
+
+      <div class="post-section-heading">
+        <span class="post-section-number">05</span>
+
+        <div>
+          <p class="post-section-kicker">Transaction Awareness</p>
+
+          <h2 id="transaction-title">
+            DB 트랜잭션이 커밋된 뒤에만 캐시가 제거되도록 무효화 시점을 동기화했습니다.
+          </h2>
+        </div>
+      </div>
+
+      <div class="post-copy">
+        <p>
+          캐시 Evict만 적용하면 상품 수정 메서드가 실행되는 과정에서 Redis 캐시가 먼저 삭제되고,
+          이후 DB 트랜잭션이 예외로 Rollback되는 상황이 발생할 수 있습니다.
+          이 경우 DB는 수정되지 않았지만 캐시만 제거되는 불필요한 상태 변화가 발생합니다.
+        </p>
+
+        <p>
+          더 복잡한 상황에서는 DB Commit 전에 캐시가 비워진 사이 다른 조회 요청이 들어와
+          아직 확정되지 않은 데이터 흐름과 경쟁하는 Race Condition으로 이어질 수 있습니다.
+          이를 방지하기 위해 RedisCacheManager를 transactionAware로 구성해
+          트랜잭션이 정상 Commit된 이후 캐시 작업이 실행되도록 했습니다.
+        </p>
+      </div>
+
+      <div class="before-after">
+
+        <div class="before-after-column">
+          <span class="before-after-label">Risk</span>
+
+          <ol>
+            <li>DB Transaction 시작</li>
+            <li>상품 UPDATE 실행</li>
+            <li>Redis Cache Evict</li>
+            <li>예외 발생 및 DB Rollback</li>
+            <li>DB는 이전 값, 캐시만 삭제</li>
+          </ol>
+        </div>
+
+
+        <div class="before-after-divider" aria-hidden="true">
+          →
+        </div>
+
+
+        <div class="before-after-column before-after-column-after">
+          <span class="before-after-label">Applied</span>
+
+          <ol>
+            <li>DB Transaction 시작</li>
+            <li>상품 UPDATE 실행</li>
+            <li>Transaction Commit</li>
+            <li>Commit 확인 후 Cache Evict</li>
+            <li>다음 조회에서 최신 데이터 캐싱</li>
+          </ol>
+        </div>
+
+      </div>
+
+
+      <div class="post-note post-note-accent">
+        <strong>Transaction + Cache</strong>
+
+        <p>
+          캐시는 DB와 별개의 저장소이기 때문에 @CacheEvict의 위치만 볼 것이 아니라,
+          실제 DB Commit과 Redis 변경이 어떤 순서로 발생하는지를 함께 설계해야 했습니다.
+        </p>
+      </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         06. Performance Test
+         ===================================================== -->
+    <section class="post-section" aria-labelledby="performance-title">
+
+      <div class="post-section-heading">
+        <span class="post-section-number">06</span>
+
+        <div>
+          <p class="post-section-kicker">Performance Test</p>
+
+          <h2 id="performance-title">
+            실제 이커머스의 인기 상품 편향을 가정해 동일한 200 RPS 조건에서 캐시 적용 전후를 비교했습니다.
+          </h2>
+        </div>
+      </div>
+
+      <div class="post-copy">
+        <p>
+          캐시 적용 전후를 신뢰성 있게 비교하려면 단순히 같은 수의 Virtual User를 실행하는 것보다
+          서버에 유입되는 요청률 자체를 동일하게 유지하는 것이 중요하다고 판단했습니다.
+          따라서 k6의 constant-arrival-rate를 사용해 No Cache와 Warm Cache 모두
+          초당 200개의 요청이 지속적으로 유입되도록 구성했습니다.
+        </p>
+
+        <p>
+          preAllocatedVUs는 50, maxVUs는 300으로 설정하여 서버 응답이 느려졌을 때
+          k6가 필요한 VU를 추가로 확보할 수 있도록 했습니다.
+          이를 통해 부하 발생기 측 VU 부족 때문에 목표 RPS를 유지하지 못하는 상황을 줄이고,
+          동일한 입력 부하에서 두 환경을 비교하는 데 집중했습니다.
+        </p>
+
+        <p>
+          또한 모든 상품을 균등하게 조회하지 않고 실제 이커머스에서 일부 인기 상품에
+          트래픽이 몰리는 상황을 단순화했습니다. 상위 20개 상품에 전체 요청의 80%를 배분하고,
+          Warm Cache 테스트에서는 setup() 단계에서 해당 상품을 미리 적재했습니다.
+          setup() 요청은 본 성능 지표와 분리되어 캐시 워밍업 자체가 측정값에 섞이지 않도록 했습니다.
+        </p>
+      </div>
+
+      <div class="change-list">
+
+        <article class="change-item">
+          <span class="change-index">01</span>
+
+          <div>
+            <h3>80 / 15 / 5 조회 분포</h3>
+
+            <p>
+              인기 상품 1~20에 80%, 일반 상품에 15%, 롱테일 상품에 5%의 요청을 배분해
+              조회 편향이 존재하는 이커머스 트래픽을 단순화해 재현했습니다.
+            </p>
+          </div>
+        </article>
+
+
+        <article class="change-item">
+          <span class="change-index">02</span>
+
+          <div>
+            <h3>Cold / Warm Cache 조건 분리</h3>
+
+            <p>
+              WARM_CACHE 환경 변수와 setup()을 이용해 캐시 워밍업 여부를 제어하고,
+              캐시 사전 적재 요청이 실제 성능 측정에 포함되지 않도록 했습니다.
+            </p>
+          </div>
+        </article>
+
+
+        <article class="change-item">
+          <span class="change-index">03</span>
+
+          <div>
+            <h3>200 RPS 고정 부하 + VU 확장</h3>
+
+            <p>
+              constant-arrival-rate로 초당 200건의 요청률을 고정하고,
+              preAllocatedVUs 50 · maxVUs 300으로 설정해 응답 지연 시에도
+              k6가 필요한 VU를 확보할 수 있도록 구성했습니다.
+            </p>
+          </div>
+        </article>
+
+
+        <article class="change-item">
+          <span class="change-index">04</span>
+
+          <div>
+            <h3>Latency · 오류율 · Dropped Iterations 함께 관찰</h3>
+
+            <p>
+              평균 응답시간만 보지 않고 p95·p99 Tail Latency와 오류율,
+              목표 요청률을 유지하지 못했을 때 발생하는 Dropped Iterations까지 함께 확인하여
+              처리 성능과 안정성을 동시에 비교했습니다.
+            </p>
+          </div>
+        </article>
+
+
+        <article class="change-item">
+          <span class="change-index">05</span>
+
+          <div>
+            <h3>Threshold 기반 성능 회귀 조건 정의</h3>
+
+            <p>
+              정상 응답률 99.9% 이상, 실패 요청 0건, 5xx 0건과 p95·p99 기준을
+              Threshold로 명시해 단순 측정 스크립트가 아니라 자동으로 성공·실패를
+              판단할 수 있는 성능 검증 테스트로 구성했습니다.
+            </p>
+          </div>
+        </article>
+
+
+        <article class="change-item">
+          <span class="change-index">06</span>
+
+          <div>
+            <h3>부하 발생기 오버헤드 최소화</h3>
+
+            <p>
+              성능 측정에 필요하지 않은 응답 본문은 discardResponseBodies로 버려
+              k6 자체의 메모리·CPU 사용량을 줄이고, 부하 발생기가 측정 결과를
+              왜곡할 가능성을 최소화했습니다.
+            </p>
+          </div>
+        </article>
+
+      </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         07. Result
+         ===================================================== -->
+    <section
+        class="post-section post-section-result"
+        aria-labelledby="result-title"
+    >
+
+      <div class="post-section-heading">
+        <span class="post-section-number">07</span>
+
+        <div>
+          <p class="post-section-kicker">Result</p>
+
+          <h2 id="result-title">
+            Redis가 반복 조회를 흡수하면서 응답시간과 고정 부하 처리 안정성이 함께 개선됐습니다.
+          </h2>
+        </div>
+      </div>
+
+      <div class="result-grid">
+
+        <article class="result-card result-card-primary">
+          <span>Avg Latency</span>
+
+          <strong>5.19ms → 1.71ms</strong>
+
+          <p>
+            동일한 200 RPS 조건에서 상품 상세 조회의 평균 응답시간을
+            약 67% 단축했습니다.
+          </p>
+        </article>
+
+
+        <article class="result-card">
+          <span>p99 Latency</span>
+
+          <strong>11.33ms → 6.82ms</strong>
+
+          <p>
+            상위 1% 요청의 응답시간도 약 40% 감소하여
+            Tail Latency를 함께 안정화했습니다.
+          </p>
+        </article>
+
+
+        <article class="result-card">
+          <span>Dropped Iterations</span>
+
+          <strong>27 → 0</strong>
+
+          <p>
+            No Cache에서는 목표 200 RPS를 유지하는 과정에서 27개의 Iteration이
+            스케줄링되지 못했지만, Warm Cache에서는 Dropped Iterations가 0건으로 감소해
+            동일한 부하 조건에서 목표 요청률을 안정적으로 유지했습니다.
+          </p>
+        </article>
+
+      </div>
+
+
+      <div class="post-note post-note-accent">
+        <strong>Repeatability</strong>
+
+        <p>
+          Warm Cache 조건을 동일하게 3회 반복 실행했을 때 평균 응답시간은
+          1.63~1.76ms, p99는 6.62~6.95ms, Dropped Iterations는 모두 0건으로
+          유사한 결과가 반복되어 개선 효과의 재현성을 확인했습니다.
+        </p>
+      </div>
+
+
+      <div class="decision-box">
+
+        <p class="decision-label">
+          What I learned
+        </p>
+
+        <h3>
+          캐시는 응답시간을 줄이는 기능을 넘어 DB에 집중되는 읽기 부하를 분산하는 아키텍처 요소였습니다.
+        </h3>
+
+        <p>
+          Redis를 추가하는 것 자체보다 어떤 데이터를 캐싱하고,
+          DB와 캐시 사이의 기준 데이터를 무엇으로 둘지,
+          트랜잭션과 캐시 무효화의 순서를 어떻게 맞출지가 더 중요했습니다.
+          또한 성능 테스트 역시 “몇 ms 빨라졌는가”만 보는 작업이 아니라,
+          동일한 입력 부하를 재현하고 평균·p95·p99 Latency와 Dropped Iterations,
+          오류율을 함께 관찰해야 처리 능력을 제대로 비교할 수 있다는 점을 배웠습니다.
+        </p>
+
+        <p>
+          실제 비교에서는 평균 응답시간이 5.19ms에서 1.71ms로 약 67% 감소했고,
+          p99는 11.33ms에서 6.82ms로 안정화됐으며,
+          Dropped Iterations도 27건에서 0건으로 감소했습니다.
+          이를 통해 캐시가 개별 요청의 응답시간을 줄이는 동시에
+          동일한 요청률을 처리할 수 있는 여유를 확보하는 데 기여했음을 확인했습니다.
+        </p>
+
+        <ul>
+          <li>
+            Read-heavy / Low-write 특성을 기준으로 캐시 적용 대상을 결정
+          </li>
+
+          <li>
+            Cache-Aside를 통해 Redis 장애 시에도 DB 조회로 서비스 지속 가능
+          </li>
+
+          <li>
+            Cache Update보다 Evict를 선택해 MySQL을 Single Source of Truth로 유지
+          </li>
+
+          <li>
+            DB Commit 이후 캐시가 변경되도록 트랜잭션과 무효화 시점을 동기화
+          </li>
+
+          <li>
+            constant-arrival-rate로 입력 부하를 고정해 No Cache와 Warm Cache의 비교 조건을 통제
+          </li>
+
+          <li>
+            평균뿐 아니라 p95·p99와 Dropped Iterations, 오류율을 함께 관찰해 처리 안정성 검증
+          </li>
+
+          <li>
+            Threshold를 통해 성능 테스트를 자동 성공·실패 판정이 가능한 회귀 검증 형태로 구성
+          </li>
+        </ul>
+
+      </div>
+
+    </section>
+
+
+    <!-- =====================================================
+         Footer
+         ===================================================== -->
+    <footer class="post-footer">
+
+      <a
+          class="post-footer-link"
+          href="../../../index.html#experience"
+      >
+        ← 기술 경험 목록으로 돌아가기
+      </a>
+
+      <p>
+        © 2026 Lim Daeil
+      </p>
+
+    </footer>
+
+  </article>
+</main>
+
+</body>
+</html>

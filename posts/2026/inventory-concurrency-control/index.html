@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="ko" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>동시 주문에서 발생한 재고 정합성 문제와 비관적 락 적용 — 임대일</title>
+
+  <meta
+      name="description"
+      content="JUnit·CountDownLatch 기반 동시성 테스트로 재고 Lost Update를 재현하고, JPA 비관적 락과 락 획득 순서 정렬을 적용하여 주문·취소·관리자 재고 수정 흐름의 정합성을 확보한 경험입니다."
+  >
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+  <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=Montserrat:wght@600;700;800;900&family=Roboto:wght@400;500;700;900&display=swap"
+  >
+
+  <link rel="stylesheet" href="../../../assets/css/main.css">
+  <link rel="stylesheet" href="../../../assets/css/post.css">
+</head>
+
+<body class="post-page">
+
+<div class="post-topbar">
+  <div class="post-topbar-inner">
+    <a class="post-brand" href="../../../index.html">임대일.dev</a>
+    <a class="post-back-link" href="../../../index.html#experience">Portfolio로 돌아가기</a>
+  </div>
+</div>
+
+<main class="post-main">
+  <article class="post-container">
+
+    <header class="post-hero">
+      <div class="post-breadcrumb">
+        <span>Technical Experience</span>
+        <span aria-hidden="true">/</span>
+        <span>Backend · Concurrency</span>
+      </div>
+
+      <h1 class="post-title">
+        동시 주문에서 발생한 재고 정합성 문제와<br class="desktop-only">
+        비관적 락 적용
+      </h1>
+
+      <p class="post-lead">
+        단일 요청에서는 정상적으로 동작하던 주문 로직을 200개의 동시 요청으로 검증해
+        재고 Lost Update를 재현했습니다. JUnit·CountDownLatch 기반 테스트로 문제를
+        수치화하고, JPA 비관적 락과 락 획득 순서 정렬을 적용하여 재고 정합성과
+        다중 상품 주문의 안정성을 확보했습니다.
+      </p>
+
+      <div class="post-meta">
+        <span>카테고리</span>
+        <span aria-hidden="true">:</span>
+        <span>Backend / Concurrency / Testing</span>
+        <span aria-hidden="true">·</span>
+        <time datetime="2026">2025 ~ 2026</time>
+      </div>
+
+      <div class="post-tags" aria-label="사용 기술">
+        <span class="tag tag-java">Java</span>
+        <span class="tag tag-spring">Spring Boot</span>
+        <span class="tag tag-jpa">JPA</span>
+        <span class="tag tag-mysql">MySQL</span>
+        <span class="tag tag-junit">JUnit</span>
+      </div>
+    </header>
+
+    <section class="post-section" aria-labelledby="overview-title">
+      <div class="post-section-heading">
+        <span class="post-section-number">01</span>
+        <div>
+          <p class="post-section-kicker">Overview</p>
+          <h2 id="overview-title">재고가 10개인데 주문은 99건이 성공했습니다.</h2>
+        </div>
+      </div>
+
+      <div class="post-copy">
+        <p>
+          상품·주문·결제 도메인을 구현한 뒤 Postman과 IntelliJ HTTP 기능 테스트에서는
+          주문 생성과 재고 차감이 문제없이 동작했습니다.
+          하지만 <b>“동일한 상품에 여러 사용자가 동시에 주문하면 어떻게 될까?”</b>라는 현실적인 의문이 생겨
+          실제 동시 요청 상황을 테스트했습니다.
+        </p>
+
+        <p>
+          초기 재고 10개인 상품에 200명의 사용자가 동시에 1개씩 주문하도록 테스트한 결과,
+          재고는 0개가 되었지만 주문은 최대 99건 이상 성공하는 정합성 붕괴가 발생했습니다.
+          화면상 재고 수량만 보면 정상처럼 보였지만 실제로는 존재하지 않는 재고가 판매된 상태였습니다.
+        </p>
+      </div>
+
+      <div class="metric-grid">
+        <div class="metric-card">
+          <strong>재고 개수: 10</strong>
+          <span>테스트 시작 시점의 초기 재고</span>
+        </div>
+        <div class="metric-card">
+          <strong>주문 개수: 200</strong>
+          <span>동시에 주문을 시도한 사용자 수</span>
+        </div>
+        <div class="metric-card">
+          <strong>비정상 성공: 99+</strong>
+          <span>재현 과정에서 확인된 비정상 주문 성공 건수</span>
+        </div>
+        <div class="metric-card metric-card-highlight">
+          <strong>정상 주문 건수: 10</strong>
+          <span>정상적으로 허용되어야 하는 최대 주문 성공 건수</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="post-section" aria-labelledby="problem-title">
+      <div class="post-section-heading">
+        <span class="post-section-number">02</span>
+        <div>
+          <p class="post-section-kicker">Problem</p>
+          <h2 id="problem-title">
+            단일 트랜잭션은 안전했지만 서로 다른 트랜잭션의 동시 접근은 제어되지 않았습니다.
+          </h2>
+        </div>
+      </div>
+
+      <div class="post-copy">
+        <p>
+          기존 주문 로직은 재고를 조회하고, 주문 가능 여부를 검증한 뒤,
+          재고를 차감하고 주문을 저장하는 일반적인 흐름이었습니다.
+          단일 요청에서는 문제가 없었지만 여러 트랜잭션이 같은 Inventory Row를
+          거의 동시에 읽는 순간 Lost Update가 발생했습니다.
+        </p>
+      </div>
+
+      <div class="problem-grid">
+        <article class="problem-card">
+          <span class="problem-label">Lost Update</span>
+          <h3>서로 다른 요청이 <br/> 같은 재고 값을 기준으로 수정했습니다.</h3>
+          <ul>
+            <li>Thread A가 재고 10을 조회</li>
+            <li>Thread B도 재고 10을 조회</li>
+            <li>두 요청 모두 10 → 9로 계산</li>
+            <li>나중에 저장된 값이 앞선 변경을 덮어씀</li>
+          </ul>
+        </article>
+
+        <article class="problem-card">
+          <span class="problem-label">Transaction</span>
+          <h3>@Transactional만으로는 <br/> 동시 접근을 막을 수 없었습니다.</h3>
+          <ul>
+            <li>각 주문 요청은 서로 다른 트랜잭션으로 실행</li>
+            <li>트랜잭션 내부 원자성은 보장</li>
+            <li>동일 Row에 대한 동시 읽기·수정은 별도 제어 필요</li>
+            <li>재고 정합성은 애플리케이션 수준 검증만으로 보장 불가능</li>
+          </ul>
+        </article>
+      </div>
+
+      <blockquote class="post-quote">
+        “재고가 0이 되었다”는 결과만으로 정합성을 판단할 수 없었습니다. <br/>
+        초기 재고 = 성공한 주문 수량 + 최종 재고라는 불변식이 유지되는지가 핵심이었습니다.
+      </blockquote>
+    </section>
+
+    <section class="post-section" aria-labelledby="test-title">
+      <div class="post-section-heading">
+        <span class="post-section-number">03</span>
+        <div>
+          <p class="post-section-kicker">Concurrency Test</p>
+          <h2 id="test-title">동시성 문제를 추측하지 않고 재현 가능한 테스트로 만들었습니다.</h2>
+        </div>
+      </div>
+
+      <div class="post-copy">
+        <p>
+          테스트의 기준은 단순한 성공·실패 건수가 아니라 재고 불변식으로 정의했습니다.
+          초기 재고 10개라면 성공한 주문 수량과 최종 재고의 합이 반드시 10이어야 합니다.
+          이 기준을 통해 매 실행마다 결과가 달라지는 동시성 테스트에서도
+          정합성 붕괴 여부를 일관되게 판단할 수 있었습니다.
+        </p>
+
+        <p>
+          단순히 ExecutorService로 200개의 작업을 제출하는 방식은 운영체제 스케줄링에 따라
+          순차 실행 비율이 달라져 결과가 일정하지 않았습니다.
+          모든 작업이 준비된 뒤 같은 시점에 출발하도록 CountDownLatch를 사용해
+          실제 경쟁 상황을 최대한 강하게 만들었습니다.
+        </p>
+      </div>
+
+      <div class="change-list">
+        <article class="change-item">
+          <span class="change-index">01</span>
+          <div>
+            <h3>재고 불변식 정의</h3>
+            <p>
+              초기 재고 = 성공한 주문 수량 + 최종 재고를 핵심 검증 기준으로 두고,
+              정상 상태와 정합성 붕괴 상태를 수치로 구분했습니다.
+            </p>
+          </div>
+        </article>
+
+        <article class="change-item">
+          <span class="change-index">02</span>
+          <div>
+            <h3>ExecutorService + CountDownLatch</h3>
+            <p>
+              200개의 작업을 미리 생성한 뒤 startLatch에서 대기시키고, <br/>
+              한 번의 countDown()으로 동시에 실행하여 동일 Inventory Row에 대한
+              경쟁 조건을 재현했습니다.
+            </p>
+          </div>
+        </article>
+
+        <article class="change-item">
+          <span class="change-index">03</span>
+          <div>
+            <h3>테스트 Fixture 개선</h3>
+            <p>
+              다수 회원 생성 과정에서 발생하던 이메일 중복 문제를 해결하기 위해 <br/>
+              AtomicLong 기반 시퀀스로 매 실행마다 고유한 테스트 데이터를 생성하도록 변경했습니다.
+            </p>
+          </div>
+        </article>
+
+        <article class="change-item">
+          <span class="change-index">04</span>
+          <div>
+            <h3>Flaky Test 해석 기준 변경</h3>
+            <p>
+              성공 건수가 실행마다 달라지는 현상을 실패로 보지 않고, <br/>
+              비결정적인 스레드 스케줄링 환경에서도 재고 불변식이 깨지는지를
+              핵심 검증 기준으로 삼았습니다.
+            </p>
+          </div>
+        </article>
+      </div>
+
+      <div class="post-note post-note-accent">
+        <strong>Why CountDownLatch?</strong>
+        <p>
+          이번 테스트는 반복적인 동기화가 아니라 “한 번에 동시에 출발”시키는 것이 목적이었기 때문에 <br/>
+          CyclicBarrier보다 1회성 제어에 단순하고 직관적인 CountDownLatch를 선택했습니다.
+        </p>
+      </div>
+    </section>
+
+    <section class="post-section" aria-labelledby="lock-title">
+      <div class="post-section-heading">
+        <span class="post-section-number">04</span>
+        <div>
+          <p class="post-section-kicker">Lock Decision</p>
+          <h2 id="lock-title">
+            충돌이 자주 발생하는 주문 특성을 고려해 Inventory에 비관적 락을 적용했습니다.
+          </h2>
+        </div>
+      </div>
+
+      <div class="post-copy">
+        <p>
+          synchronized, Redis 분산 락, 낙관적 락, 비관적 락, Atomic UPDATE를
+          대안으로 검토했습니다. 다중 서버 환경을 고려하면 JVM 내부의 synchronized만으로는
+          충분하지 않았고, 별도 분산 락 인프라를 추가하는 것도 현재 규모에는 과하다고 판단했습니다.
+        </p>
+
+        <p>
+          또한 인기 상품이나 타임세일처럼 동일 상품에 요청이 집중되는 상황에서는
+          충돌 자체가 드문 예외가 아니라 자주 발생할 수 있습니다.
+          낙관적 락의 반복적인 충돌·재시도 비용보다 DB Row를 먼저 잠그고 순차 처리하는
+          비관적 락이 현재 요구사항에 더 적합하다고 판단했습니다.
+        </p>
+      </div>
+
+      <div class="tradeoff-card">
+        <div>
+          <span>Optimistic Lock</span>
+          <strong>충돌 후 감지·재시도</strong>
+          <p>
+            충돌이 드물 때 효율적이지만 타임세일처럼 동일 상품에 요청이 집중되면
+            재시도 비용이 크게 증가할 수 있습니다.
+          </p>
+        </div>
+
+        <div class="tradeoff-arrow" aria-hidden="true">→</div>
+
+        <div>
+          <span>Selected</span>
+          <strong>Pessimistic Lock</strong>
+          <p>
+            Inventory 조회 시점부터 쓰기 락을 획득하여
+            동일 재고를 수정하는 트랜잭션을 순차 처리하도록 했습니다.
+          </p>
+        </div>
+      </div>
+
+      <div class="before-after">
+        <div class="before-after-column">
+          <span class="before-after-label">Before</span>
+          <ol>
+            <li>Inventory 일반 조회</li>
+            <li>각 트랜잭션이 동일 재고 값 사용</li>
+            <li>재고 검증 및 차감</li>
+            <li>Lost Update 발생 가능</li>
+          </ol>
+        </div>
+
+        <div class="before-after-divider" aria-hidden="true">→</div>
+
+        <div class="before-after-column before-after-column-after">
+          <span class="before-after-label">After</span>
+          <ol>
+            <li>SELECT ... FOR UPDATE</li>
+            <li>Inventory Row 쓰기 락 획득</li>
+            <li>후행 트랜잭션 대기</li>
+            <li>최신 재고 기준으로 순차 처리</li>
+          </ol>
+        </div>
+      </div>
+    </section>
+
+    <section class="post-section" aria-labelledby="deadlock-title">
+      <div class="post-section-heading">
+        <span class="post-section-number">05</span>
+        <div>
+          <p class="post-section-kicker">Deadlock</p>
+          <h2 id="deadlock-title">
+            단일 상품의 정합성을 해결한 뒤 다중 상품 주문에서 데드락 가능성을 발견했습니다.
+          </h2>
+        </div>
+      </div>
+
+      <div class="post-copy">
+        <p>
+          한 번의 주문에서 여러 상품을 처리하면 트랜잭션마다 Inventory Row를 획득하는 순서가
+          달라질 수 있습니다. 사용자 A가 상품 A → B 순서로 락을 잡고,
+          사용자 B가 B → A 순서로 락을 요청하면 서로 상대방의 락을 기다리는
+          교착 상태가 발생할 수 있습니다.
+        </p>
+
+        <p>
+          이를 방지하기 위해 요청으로 전달된 상품 ID를 오름차순 정렬한 뒤
+          항상 동일한 순서로 락을 획득하도록 변경했습니다.
+          요청 순서와 관계없이 모든 트랜잭션이 같은 락 획득 순서를 따르게 하여
+          순환 대기 조건을 제거했습니다.
+        </p>
+      </div>
+
+      <div class="before-after">
+        <div class="before-after-column">
+          <span class="before-after-label">Risk</span>
+          <ol>
+            <li>사용자 A: 상품 15 → 3 → 7</li>
+            <li>사용자 B: 상품 7 → 3 → 15</li>
+            <li>서로 다른 순서로 Row Lock 획득</li>
+            <li>순환 대기 및 Deadlock 가능</li>
+          </ol>
+        </div>
+
+        <div class="before-after-divider" aria-hidden="true">→</div>
+
+        <div class="before-after-column before-after-column-after">
+          <span class="before-after-label">Applied</span>
+          <ol>
+            <li>요청 상품 ID 사전 정렬</li>
+            <li>3 → 7 → 15 순으로 고정</li>
+            <li>모든 트랜잭션 동일한 락 획득 순서 사용</li>
+            <li>Deadlock 발생 조건 제거</li>
+          </ol>
+        </div>
+      </div>
+    </section>
+
+    <section class="post-section" aria-labelledby="scope-title">
+      <div class="post-section-heading">
+        <span class="post-section-number">06</span>
+        <div>
+          <p class="post-section-kicker">Consistency Scope</p>
+          <h2 id="scope-title">
+            동시성 정책을 주문 생성 하나가 아니라 Inventory를 변경하는 모든 흐름으로 확장했습니다.
+          </h2>
+        </div>
+      </div>
+
+      <div class="post-copy">
+        <p>
+          재고를 변경하는 주체는 주문 생성만이 아니었습니다.
+          주문 취소 시 재고가 복구되고, 관리자는 운영 중 직접 재고 수량을 수정할 수 있습니다.
+          주문 생성에만 락을 적용하면 다른 쓰기 경로와 충돌하는 순간 Lost Update가 다시 발생할 수 있습니다.
+        </p>
+      </div>
+
+      <div class="change-list">
+        <article class="change-item">
+          <span class="change-index">01</span>
+          <div>
+            <h3>주문 생성</h3>
+            <p>
+              Inventory에 비관적 락을 획득한 뒤 판매 가능 여부와 수량을 검증하고
+              재고 차감과 주문 생성을 하나의 트랜잭션으로 처리했습니다.
+            </p>
+          </div>
+        </article>
+
+        <article class="change-item">
+          <span class="change-index">02</span>
+          <div>
+            <h3>주문 취소 및 재고 복구</h3>
+            <p>
+              재고 증가 역시 동일 Row를 수정하는 Write 작업이므로
+              주문 취소·결제 실패에 따른 재고 복구에도 동일한 락 정책을 적용했습니다.
+            </p>
+          </div>
+        </article>
+
+        <article class="change-item">
+          <span class="change-index">03</span>
+          <div>
+            <h3>관리자 재고 수정</h3>
+            <p>
+              사용자 주문과 관리자 재고 변경이 동시에 실행될 가능성을 고려해
+              관리자 수정 서비스도 동일한 비관적 락 조회를 사용했습니다.
+            </p>
+          </div>
+        </article>
+      </div>
+
+      <div class="post-note post-note-accent">
+        <strong>Consistency Rule</strong>
+        <p>
+          핵심은 특정 서비스 메서드에 @Lock을 추가하는 것이 아니라, <br/>
+          동일한 Inventory를 변경하는 모든 진입점이 하나의 동시성 규칙을 따르도록 만드는 것이었습니다.
+        </p>
+      </div>
+    </section>
+
+    <section class="post-section" aria-labelledby="tradeoff-title">
+      <div class="post-section-heading">
+        <span class="post-section-number">07</span>
+        <div>
+          <p class="post-section-kicker">Trade-off</p>
+          <h2 id="tradeoff-title">
+            비관적 락은 정합성을 보장했지만 대기 시간과 DB 자원을 비용으로 사용했습니다.
+          </h2>
+        </div>
+      </div>
+
+      <div class="problem-grid">
+        <article class="problem-card">
+          <span class="problem-label">Latency</span>
+          <h3>요청이 증가할수록 후행 트랜잭션의 대기 시간이 길어집니다.</h3>
+          <ul>
+            <li>선행 트랜잭션 Commit까지 Lock Wait</li>
+            <li>락 점유 시간이 길수록 전체 지연 증가</li>
+            <li>트랜잭션 내부 작업을 최소화할 필요</li>
+          </ul>
+        </article>
+
+        <article class="problem-card">
+          <span class="problem-label">Connection Pool</span>
+          <h3>락 대기 요청도 DB Connection을 점유합니다.</h3>
+          <ul>
+            <li>락 경쟁 증가 시 Connection 사용량 증가</li>
+            <li>HikariCP Pool 고갈 가능</li>
+            <li>무관한 조회 API까지 장애가 전파될 위험</li>
+          </ul>
+        </article>
+
+        <article class="problem-card">
+          <span class="problem-label">Timeout</span>
+          <h3>무한 대기 대신 실패 정책이 필요합니다.</h3>
+          <ul>
+            <li>Lock Timeout 설정 필요</li>
+            <li>LockTimeoutException 처리 필요</li>
+            <li>사용자 안내 또는 제한적 재시도 정책 검토</li>
+          </ul>
+        </article>
+
+        <article class="problem-card">
+          <span class="problem-label">Scalability</span>
+          <h3>트래픽 규모가 커지면 DB 락만으로는 한계가 있습니다.</h3>
+          <ul>
+            <li>Redis 분산 락 검토 가능</li>
+            <li>Kafka·RabbitMQ 기반 요청 직렬화 검토</li>
+            <li>Peak Traffic을 Queue로 완충하는 구조 고려</li>
+          </ul>
+        </article>
+      </div>
+
+      <div class="tradeoff-card">
+        <div>
+          <span>Atomic UPDATE</span>
+          <strong>높은 처리 효율</strong>
+          <p>
+            단일 재고 증감에는 효율적이지만,
+            판매 가능 상태 검증·주문 생성 등 여러 상태 변화를
+            하나의 비즈니스 트랜잭션으로 보호하기에는 제약이 있었습니다.
+          </p>
+        </div>
+
+        <div class="tradeoff-arrow" aria-hidden="true">→</div>
+
+        <div>
+          <span>Selected</span>
+          <strong>Pessimistic Lock + Transaction</strong>
+          <p>
+            현재 프로젝트에서는 재고 검증부터 주문 생성까지의 흐름 전체를
+            하나의 ACID 트랜잭션으로 보호하는 것을 우선했습니다.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section class="post-section post-section-result" aria-labelledby="result-title">
+      <div class="post-section-heading">
+        <span class="post-section-number">08</span>
+        <div>
+          <p class="post-section-kicker">Result</p>
+          <h2 id="result-title">
+            동시성 문제를 재현하고, 데이터 정합성과 락 정책을 시스템 전체 관점에서 설계했습니다.
+          </h2>
+        </div>
+      </div>
+
+      <div class="result-grid">
+        <article class="result-card">
+          <span>Testing</span>
+          <strong>동시성 문제 재현</strong>
+          <p>
+            JUnit·CountDownLatch를 사용해 200개의 동시 주문을 만들고
+            재고 불변식으로 Lost Update를 검증했습니다.
+          </p>
+        </article>
+
+        <article class="result-card">
+          <span>Consistency</span>
+          <strong>10건 성공 / 190건 실패</strong>
+          <p>
+            비관적 락 적용 후 초기 재고 10개에 대해
+            성공 주문 10건, 재고 부족 190건, 최종 재고 0개로 정합성을 확인했습니다.
+          </p>
+        </article>
+
+        <article class="result-card result-card-primary">
+          <span>Architecture</span>
+          <strong>재고 변경 정책 통일</strong>
+          <p>
+            주문·취소·관리자 수정까지 Inventory를 변경하는 모든 흐름에
+            동일한 락 정책을 적용했습니다.
+          </p>
+        </article>
+      </div>
+
+      <div class="decision-box">
+        <p class="decision-label">What I learned</p>
+
+        <h3>
+          동시성 문제의 해결은 락 하나를 추가하는 것이 아니라
+          정합성과 처리량 사이의 균형점을 설계하는 과정이었습니다.
+        </h3>
+
+        <p>
+          처음에는 @Lock(LockModeType.PESSIMISTIC_WRITE)을 적용하면 문제가 끝난다고 생각했습니다.
+          하지만 실제로는 테스트 환경의 비결정성, 다중 상품 주문의 데드락,
+          주문 외 재고 변경 경로, Lock Timeout과 Connection Pool 고갈 가능성까지
+          함께 고려해야 했습니다. 현재 규모에서는 비관적 락이 가장 단순하면서도
+          비즈니스 트랜잭션 전체의 정합성을 보호할 수 있는 선택이었지만,
+          트래픽 규모가 증가한다면 Redis 분산 락이나 메시지 큐 기반 비동기 처리로
+          확장해야 한다는 점도 함께 확인했습니다.
+        </p>
+
+        <ul>
+          <li>@Transactional은 서로 다른 트랜잭션의 동일 데이터 접근까지 제어하지 않음</li>
+          <li>동시성 테스트는 특정 성공 건수보다 비즈니스 불변식을 기준으로 검증</li>
+          <li>다중 Row Lock에서는 모든 트랜잭션의 락 획득 순서를 통일해 Deadlock 위험 제거</li>
+          <li>동시성 정책은 주문 생성이 아니라 동일 데이터를 변경하는 모든 경로에 일관되게 적용</li>
+          <li>비관적 락의 정합성 이점과 Latency·Connection Pool 비용을 함께 고려</li>
+        </ul>
+      </div>
+    </section>
+
+    <footer class="post-footer">
+      <a class="post-footer-link" href="../../../index.html#experience">
+        ← 기술 경험 목록으로 돌아가기
+      </a>
+
+      <p>© 2026 Lim Daeil</p>
+    </footer>
+
+  </article>
+</main>
+
+</body>
+</html>

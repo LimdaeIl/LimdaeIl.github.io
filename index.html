@@ -125,20 +125,20 @@
               </a>
 
               <a
-                  href="tel:010-6366-6725"
+                  href="#contact"
                   aria-label="전화 걸기"
                   title="전화"
               >
                 <img
                     src="images/phone-logo.png"
-                    alt=""
+                    alt="#contact"
                     width="24"
                     height="24"
                 >
               </a>
 
               <a
-                  href="mailto:limdaeil94@gmail.com"
+                  href="#contact"
                   aria-label="이메일 보내기"
                   title="이메일"
               >
@@ -158,20 +158,20 @@
         <div class="intro-tags">
           <p>
             <span>#문제해결</span>
-            운영 중 발생한 데이터 수집 실패와 비동기 처리 문제를 분석하고,
-            안정적인 처리 흐름으로 개선한 경험이 있습니다.
+            문제가 생기면 증상만 고치기보다 로그와 데이터를 확인하며
+            원인을 찾고, 다시 발생하지 않는 방법을 고민합니다.
           </p>
 
           <p>
             <span>#백엔드</span>
-            Java, Spring Boot, PostgreSQL, MySQL을 중심으로
-            데이터 기반 백엔드 기능을 구현합니다.
+            Java와 Spring을 중심으로 개발하며,
+            동시성·데이터 정합성·조회 성능 같은 백엔드 문제에 관심이 많습니다.
           </p>
 
           <p>
-            <span>#운영개선</span>
-            데이터 정합성, 장애 재발 방지, 성능을 함께 고려하며
-            운영 가능한 구조를 지향합니다.
+            <span>#성장</span>
+            동작하는 코드에서 끝내지 않고,
+            테스트하고 측정하면서 더 나은 구조와 이유를 찾아가는 개발을 좋아합니다.
           </p>
         </div>
       </div>
@@ -213,7 +213,7 @@
               <li>고객사 FortiSOAR Playbook, Connector, Dashboard 솔루션 운영 및 현장 유지보수</li>
               <li>PRTG·FortiSIEM 기반 네트워크 및 방화벽 장비 데이터 수집과 월간 보고서 처리</li>
               <li>사내 그룹웨어 백엔드 기능 개발 및 서비스 고도화</li>
-          </ul>
+            </ul>
           </div>
         </article>
       </div>
@@ -223,8 +223,8 @@
     <section id="projects" class="fade-up" aria-labelledby="projects-title">
       <div class="section-header">
         <div>
-          <span class="section-kicker">Projects</span>
-          <h2 class="section-title" id="projects-title">프로젝트</h2>
+          <span class="section-kicker">Projects · Education</span>
+          <h2 class="section-title" id="projects-title">프로젝트 · 교육</h2>
         </div>
 
         <p class="section-desc">
@@ -234,7 +234,106 @@
 
       <div class="project-list">
 
-        <!-- SIEM -->
+        <!-- 쇼핑몰 주문·재고 동시성 제어 및 성능 최적화 -->
+        <article class="project-item">
+          <h3 class="project-title">
+            쇼핑몰 주문·재고 동시성 제어 및 조회 성능 최적화
+          </h3>
+
+          <div class="project-meta">
+            <span>개인 프로젝트</span>
+            <span class="project-meta-divider" aria-hidden="true">|</span>
+            <time datetime="2026">
+              2026.07 ~ 2026.07
+            </time>
+          </div>
+
+          <h4 class="project-subtitle">Description</h4>
+
+          <p class="project-desc">
+            상품·주문·결제 도메인을 중심으로 쇼핑몰 백엔드를 구현하고, <br/>
+            재고 동시성 제어·대용량 조회 쿼리 분석·캐시 적용·부하 테스트를 통해 데이터 정합성과 조회 성능을 개선했습니다.
+          </p>
+
+          <h4 class="project-subtitle">Key Contributions</h4>
+
+          <ul class="project-contributions">
+            <li>
+              JUnit·CountDownLatch로 재고 Lost Update를 재현하고,
+              JPA 비관적 락을 적용해 주문·취소·재고 수정의 정합성 확보
+            </li>
+
+            <li>
+              재고 변경 로직의 락 정책을 통일하고,
+              Lock Timeout·Connection Pool 고갈 등 비관적 락의 한계와 MQ 확장 방향 분석
+            </li>
+
+            <li>
+              약 10만 건의 테스트 데이터와 MySQL EXPLAIN을 활용해
+              실행 계획과 인덱스를 분석하고 조회 쿼리 최적화
+            </li>
+
+            <li>
+              상품 상세 조회에 Redis Cache-Aside를 적용하고,
+              커밋 이후 캐시 무효화로 DB·캐시 정합성 확보
+            </li>
+
+            <li>
+              k6 200 RPS 테스트에서 평균 응답시간을
+              5.19ms → 1.71ms로 약 67% 단축하고 Dropped Iterations 27건 → 0건 개선
+            </li>
+          </ul>
+
+          <h4 class="project-subtitle">Tech Stack</h4>
+
+          <div class="project-tags" aria-label="프로젝트 기술 스택">
+            <span class="tag tag-java">Java</span>
+            <span class="tag tag-spring">Spring Boot</span>
+            <span class="tag tag-spring-security">Spring Security</span>
+            <span class="tag tag-jpa">JPA</span>
+            <span class="tag tag-mysql">MySQL</span>
+            <span class="tag tag-redis">Redis</span>
+            <span class="tag tag-junit">JUnit</span>
+            <span class="tag tag-k6">k6</span>
+            <span class="tag tag-docker">Docker</span>
+            <span class="tag tag-github">GitHub</span>
+          </div>
+
+          <div class="project-related">
+            <span class="project-related-label">Related Experience</span>
+
+            <ul class="project-related-list">
+              <li>
+                <a
+                    class="related-experience-link"
+                    href="posts/2026/inventory-concurrency-control/"
+                >
+                  동시 주문에서 발생한 재고 정합성 문제와 비관적 락 적용
+                </a>
+              </li>
+
+              <li>
+                <a
+                    class="related-experience-link"
+                    href="posts/2026/product-detail-cache-optimization/"
+                >
+                  Redis 캐시 기반 상품 상세 조회 성능 최적화
+                </a>
+              </li>
+
+              <li>
+                <a
+                    class="related-experience-link"
+                    href="posts/2026/mysql-query-optimization"
+                >
+                  10만 건 데이터 기반 MySQL Explain 분석 및 조회 쿼리 최적화
+                </a>
+              </li>
+            </ul>
+          </div>
+        </article>
+
+        <!-- ITSIN SIEM -->
         <article class="project-item">
           <h3 class="project-title">
             한 번의 요청에 수만 건의 데이터 수집 안정화 및 비동기 처리 개선
@@ -283,7 +382,6 @@
             <span class="tag tag-postgresql">PostgreSQL</span>
             <span class="tag tag-fortisiem">FortiSIEM</span>
             <span class="tag tag-redis">Redis</span>
-            <span class="tag tag-bullmq">BullMQ</span>
             <span class="tag tag-nginx">Nginx</span>
             <span class="tag tag-proxmox">Proxmox</span>
             <span class="tag tag-github">GitHub</span>
@@ -293,12 +391,12 @@
             <span class="project-related-label">Related Experience</span>
 
             <a class="related-experience-link" href="posts/2026/siem-collection-optimization/">
-              방화벽 월간보고서 데이터 수집 안정화 및 성능 개선
+              수만 건 규모 데이터 수집에서 외부 API 안정성과 처리 성능 개선 경험
             </a>
           </div>
         </article>
 
-        <!-- Database Migration & JWT Enhancement -->
+        <!-- ITSIN Database Migration & JWT Enhancement -->
         <article class="project-item">
           <h3 class="project-title">
             MySQL → PostgreSQL 데이터 마이그레이션 및 JWT 인증 고도화
@@ -322,13 +420,13 @@
           <h4 class="project-subtitle">Key Contributions</h4>
 
           <ul class="project-contributions">
-            <li> PK·FK·제약조건과 연관관계가 불완전한 26개 레거시 테이블을 분석하고,
+            <li> 이미 운영중인 올바르지 않은 PK·FK·제약조건과 연관관계가 불완전한 26개 레거시 테이블을 분석하고,
               데이터 의존관계와 이관 순서를 수립하여 MySQL 운영 데이터를 PostgreSQL로 마이그레이션
             </li>
-            <li> SELECT·JOIN 기반으로 테이블 간 실제 데이터 관계를 검증하고,
+            <li> SELECT·JOIN 기반으로 테이블 간 데이터 관계를 검증하고,
               이관 전후 데이터 누락 및 참조 관계를 점검하여 데이터 정합성 확보
             </li>
-            <li> Refresh Token 기반 인증 구조를 구현하고 Rotation·Blacklist·토큰 해시 저장·Secure Cookie를 적용하여,
+            <li> Rotation·Blacklist·토큰 해시 저장·Secure Cookie를 적용하여,
               로그인 유지 편의성을 개선하고 토큰 재사용 및 노출 위험 완화
             </li>
           </ul>
@@ -344,7 +442,6 @@
             <span class="tag tag-postgresql">PostgreSQL</span>
             <span class="tag tag-fortisiem">FortiSIEM</span>
             <span class="tag tag-redis">Redis</span>
-            <span class="tag tag-bullmq">BullMQ</span>
             <span class="tag tag-nginx">Nginx</span>
             <span class="tag tag-proxmox">Proxmox</span>
             <span class="tag tag-github">GitHub</span>
@@ -362,97 +459,492 @@
           </div>
         </article>
 
+        <!-- 모임 플랫폼 백엔드 인증·동시성 제어 및 성능 최적화 -->
+        <article class="project-item">
+          <h3 class="project-title">
+            모임 플랫폼 백엔드 인증·동시성 제어 및 성능 최적화
+          </h3>
+
+          <div class="project-meta">
+            <span>코드잇 스프린트 수행과제</span>
+            <span class="project-meta-divider" aria-hidden="true">|</span>
+            <time datetime="2025-11">
+              2025.11 ~ 2026.01 (약 2개월)
+            </time>
+          </div>
+
+          <h4 class="project-subtitle">Description</h4>
+
+          <p class="project-desc">
+            모임 생성·참여·실시간 알림 기능을 제공하는 플랫폼에서 인증 시스템과 모임 도메인을 설계하고, <br/>
+            동시성 제어·조회 쿼리·이벤트 처리·이미지 저장 구조를 개선하여 서비스 안정성과 데이터 처리 성능을 높였습니다.
+          </p>
+
+          <h4 class="project-subtitle">Key Contributions</h4>
+
+          <ul class="project-contributions">
+            <li>
+              Spring Security·JWT 기반 인증/인가 시스템과 모임 도메인 및 ERD를 설계하고,
+              SSE 기반 실시간 알림 기능 구현
+            </li>
+
+            <li>
+              Redis SETNX·TTL 기반 분산 락을 적용하여 모임 참가 시 발생할 수 있는 동시 요청을 제어하고,
+              정원 초과 및 중복 참가 방지
+            </li>
+
+            <li>
+              모임 목록 조회의 N+1 Query를 개선하고 Cursor Pagination을 적용하여
+              조회 성능 향상 및 데이터베이스 부하 감소
+            </li>
+
+            <li>
+              AFTER_COMMIT 이벤트 기반 구조를 적용하여 트랜잭션 롤백 시 알림이 발송되는 문제를 해결하고
+              데이터 정합성 확보
+            </li>
+
+            <li>
+              WebP 변환·리사이징 및 Redis TTL 기반 임시 이미지 관리 구조를 구현하여
+              저장 용량 약 70% 절감 및 미사용 이미지 자동 정리
+            </li>
+
+            <li>
+              이미지 개별 INSERT를 Bulk Insert 방식으로 개선하고,
+              GitHub Actions, Prometheus·Grafana 환경 구축
+            </li>
+          </ul>
+
+          <h4 class="project-subtitle">Tech Stack</h4>
+
+          <div class="project-tags" aria-label="프로젝트 기술 스택">
+            <span class="tag tag-java">Java 17</span>
+            <span class="tag tag-spring">Spring Boot</span>
+            <span class="tag tag-spring-security">Spring Security</span>
+            <span class="tag tag-jwt">JWT</span>
+            <span class="tag tag-jpa">JPA</span>
+            <span class="tag tag-redis">Redis</span>
+            <span class="tag tag-sse">SSE</span>
+            <span class="tag tag-docker">Docker</span>
+            <span class="tag tag-github">GitHub Actions</span>
+            <span class="tag tag-aws">AWS Lightsail</span>
+            <span class="tag tag-prometheus">Prometheus</span>
+            <span class="tag tag-grafana">Grafana</span>
+          </div>
+
+          <div class="project-related">
+            <span class="project-related-label">Related Experience</span>
+
+            <ul class="project-related-list">
+              <li>
+                <a
+                    class="related-experience-link"
+                    href="posts/2026/cors-troubleshooting/"
+                >
+                  Spring Security 환경의 CORS 요청 실패 원인 분석 및 해결
+                </a>
+              </li>
+
+              <li>
+                <a
+                    class="related-experience-link"
+                    href="posts/2026/gathering-participation-concurrency/"
+                >
+                  모임 참가 정원 동시성 제어와 비관적 락 설계
+                </a>
+              </li>
+
+              <li>
+                <a
+                    class="related-experience-link"
+                    href="posts/2026/group-image-preupload-optimization"
+                >
+                  이미지 최적화와 Redis Pre-upload 설계
+                </a>
+              </li>
+
+              <li>
+                <a
+                    class="related-experience-link"
+                    href="posts/2026/gathering-list-query-optimization"
+                >
+                  모임 목록 조회 N+1 및 Cursor Pagination 개선
+                </a>
+              </li>
+            </ul>
+          </div>
+        </article>
+
+        <!-- 스파르타 내일배움캠프 스프링 심화 3기 교육 이수 -->
+        <article class="project-item">
+          <h3 class="project-title">
+            Spring 심화 과정 3기 교육 수료 및 MSA 기반 쿠폰 서비스 설계·구현
+          </h3>
+
+          <div class="project-meta">
+            <span>스파르타코딩클럽 내일배움캠프</span>
+            <span class="project-meta-divider" aria-hidden="true">|</span>
+            <time datetime="2025-02">
+              2025.02 ~ 2025.04 (3개월)
+            </time>
+          </div>
+
+          <h4 class="project-subtitle">Description</h4>
+
+          <p class="project-desc">
+            Java·Spring 기반 백엔드 개발부터 MSA·성능·운영·보안에 관한 교육 수료하고, <br/>
+            Spring Cloud 기반 MSA 프로젝트에서 회원·쿠폰 도메인과 인증, 동시성 제어 및 모니터링 환경을 구축했습니다.
+          </p>
+
+          <h4 class="project-subtitle">Key Contributions</h4>
+
+          <ul class="project-contributions">
+            <li>
+              Spring Security·JWT 기반 인증/인가 및 RBAC를 구현하고,
+              회원·쿠폰 도메인 설계와 비즈니스 로직 개발
+            </li>
+
+            <li>
+              Spring Cloud Gateway·Eureka 기반 API Gateway와 서비스 디스커버리를 구성
+            </li>
+
+            <li>
+              Redis(Redisson) 분산 락과 Kafka 비동기 처리를 적용하여
+              쿠폰 발급 과정의 동시성 제어 및 대량 요청 처리 구조 구현
+            </li>
+
+            <li>
+              JMeter 기반 10만 건 부하 테스트를 수행하여
+              대량 요청 환경에서 쿠폰 발급 구조의 안정성 검증
+            </li>
+
+            <li>
+              Prometheus·Grafana·Slack을 연계하여
+              서비스 상태 모니터링 및 장애 알림 환경 구축
+            </li>
+          </ul>
+
+          <h4 class="project-subtitle">Tech Stack</h4>
+
+          <div class="project-tags" aria-label="프로젝트 기술 스택">
+            <span class="tag tag-java">Java</span>
+            <span class="tag tag-spring">Spring Boot</span>
+            <span class="tag tag-spring-security">Spring Security</span>
+            <span class="tag tag-jwt">JWT</span>
+            <span class="tag tag-jpa">JPA</span>
+            <span class="tag tag-querydsl">QueryDSL</span>
+            <span class="tag tag-spring-cloud">Spring Cloud</span>
+            <span class="tag tag-eureka">Eureka</span>
+            <span class="tag tag-redis">Redis</span>
+            <span class="tag tag-kafka">Kafka</span>
+            <span class="tag tag-jmeter">JMeter</span>
+            <span class="tag tag-prometheus">Prometheus</span>
+            <span class="tag tag-grafana">Grafana</span>
+          </div>
+
+          <div class="project-related">
+            <span class="project-related-label">Related Experience</span>
+
+            <ul class="project-related-list">
+              <li>
+                <a
+                    class="related-experience-link"
+                    href="posts/2026/spring-advanced-msa-coupon-service/"
+                >
+                  Spring 심화 과정 수료 및 MSA 기반 쿠폰 서비스 설계·구현
+                </a>
+              </li>
+            </ul>
+          </div>
+        </article>
+      </div>
+    </section>
+
     <!-- Technical Experience -->
     <section id="experience" class="fade-up" aria-labelledby="experience-title">
       <div class="section-header">
         <div>
-          <span class="section-kicker">Experience</span>
+          <span class="section-kicker">Technical Experience</span>
           <h2 class="section-title" id="experience-title">기술 경험</h2>
         </div>
 
         <p class="section-desc">
-          구현과 운영 과정에서 마주한 문제와 해결 과정을 기술 주제별로 정리했습니다.
+          기술 경험과 부딪힌 문제를 분석하고 개선한 과정을 기술 주제별로 정리했습니다.
         </p>
       </div>
 
+
+      <!-- =========================
+           동시성 · 정합성
+           ========================= -->
       <div class="experience-group">
-        <h3 class="experience-category">서비스 개발</h3>
+        <h3 class="experience-category">동시성 · 정합성</h3>
 
         <div class="experience-list">
+
           <article class="experience-item">
             <a
                 class="experience-title"
-                href="posts/2026/siem-collection-optimization/"
+                href="posts/2026/inventory-concurrency-control/"
             >
-              방화벽 월간보고서 데이터 수집 안정화 및 성능 개선
+              동시 주문에서 발생한 재고 정합성 문제와 비관적 락 적용
             </a>
 
             <div class="experience-meta">
-              <span class="source-tag tag-itsin">이츠인</span>
-              <time datetime="2026-05">2026.05</time>
+              <span class="source-tag tag-personal">개인 프로젝트</span>
+              <time datetime="2026-07">2026.07</time>
             </div>
           </article>
+
+
+          <article class="experience-item">
+            <a
+                class="experience-title"
+                href="posts/2026/gathering-participation-concurrency/"
+            >
+              모임 참가 정원 동시성 제어와 비관적 락 설계
+            </a>
+
+            <div class="experience-meta">
+              <span class="source-tag tag-codeit">코드잇 스프린트</span>
+              <time datetime="2026-01">2026.01</time>
+            </div>
+          </article>
+
+
+          <article class="experience-item">
+            <a
+                class="experience-title"
+                href="posts/2026/spring-advanced-msa-coupon-service/"
+            >
+              Redis 분산 락·Kafka 기반 쿠폰 발급 동시성 제어와 MSA 설계
+            </a>
+
+            <div class="experience-meta">
+              <span class="source-tag tag-nest">내일배움캠프</span>
+              <time datetime="2025-04">2025.04</time>
+            </div>
+          </article>
+
         </div>
       </div>
 
+
+      <!-- =========================
+           데이터베이스 · 조회 최적화
+           ========================= -->
       <div class="experience-group">
-        <h3 class="experience-category">데이터베이스</h3>
+        <h3 class="experience-category">데이터베이스 · 조회 최적화</h3>
 
         <div class="experience-list">
+
+          <article class="experience-item">
+            <a
+                class="experience-title"
+                href="posts/2026/mysql-query-optimization/"
+            >
+              10만 건 데이터 기반 MySQL EXPLAIN 분석 및 조회 쿼리 최적화
+            </a>
+
+            <div class="experience-meta">
+              <span class="source-tag tag-personal">개인 프로젝트</span>
+              <time datetime="2026-07">2026.07</time>
+            </div>
+          </article>
+
+
+          <article class="experience-item">
+            <a
+                class="experience-title"
+                href="posts/2026/gathering-list-query-optimization/"
+            >
+              모임 목록 조회 N+1 제거 및 Cursor Pagination 설계
+            </a>
+
+            <div class="experience-meta">
+              <span class="source-tag tag-codeit">코드잇 스프린트</span>
+              <time datetime="2026-01">2026.01</time>
+            </div>
+          </article>
+
+
           <article class="experience-item">
             <a
                 class="experience-title"
                 href="posts/2026/postgres-timestamp-casting/"
             >
-              PostgreSQL timestamp 타입 마이그레이션 오류 해결
+              레거시 데이터 마이그레이션 및 JWT 인증 구조 개선
             </a>
 
             <div class="experience-meta">
               <span class="source-tag tag-itsin">이츠인</span>
-              <time datetime="2026-05">2026.05</time>
+              <time datetime="2026-03">2026.03</time>
             </div>
           </article>
+
         </div>
       </div>
 
+
+      <!-- =========================
+           캐시 · 성능 · 안정화
+           ========================= -->
       <div class="experience-group">
-        <h3 class="experience-category">아키텍처 설계</h3>
+        <h3 class="experience-category">캐시 · 성능 · 안정화</h3>
 
         <div class="experience-list">
+
           <article class="experience-item">
             <a
                 class="experience-title"
-                href="posts/2026/report-system-architecture/"
+                href="posts/2026/product-detail-cache-optimization/"
             >
-              보고서 생성 시스템 요청 흐름 설계
+              Redis 캐시 기반 상품 상세 조회 성능 최적화
+            </a>
+
+            <div class="experience-meta">
+              <span class="source-tag tag-personal">개인 프로젝트</span>
+              <time datetime="2026-07">2026.07</time>
+            </div>
+          </article>
+
+
+          <article class="experience-item">
+            <a
+                class="experience-title"
+                href="posts/2026/group-image-preupload-optimization/"
+            >
+              WebP·Redis Pre-upload 기반 이미지 처리 및 저장 구조 개선
+            </a>
+
+            <div class="experience-meta">
+              <span class="source-tag tag-codeit">코드잇 스프린트</span>
+              <time datetime="2026-01">2026.01</time>
+            </div>
+          </article>
+
+
+          <article class="experience-item">
+            <a
+                class="experience-title"
+                href="posts/2026/siem-collection-optimization/"
+            >
+              수만 건 규모 데이터 수집에서 외부 API 안정성과 처리 성능 개선
             </a>
 
             <div class="experience-meta">
               <span class="source-tag tag-itsin">이츠인</span>
-              <time datetime="2026-05">2026.05</time>
+              <time datetime="2026-04">2026.04</time>
             </div>
           </article>
+
         </div>
       </div>
 
+
+      <!-- =========================
+           보안 · 아키텍처
+           ========================= -->
       <div class="experience-group">
-        <h3 class="experience-category">프로젝트 관리</h3>
+        <h3 class="experience-category">보안 · 아키텍처</h3>
 
         <div class="experience-list">
+
           <article class="experience-item">
             <a
                 class="experience-title"
-                href="posts/2026/report-collection-schedule-management/"
+                href="posts/2026/cors-troubleshooting/"
             >
-              보고서 수집 일정 및 작업 우선순위 관리
+              Spring Security 환경의 CORS 요청 실패 원인 분석 및 해결
             </a>
 
             <div class="experience-meta">
-              <span class="source-tag tag-itsin">이츠인</span>
-              <time datetime="2026-05">2026.05</time>
+              <span class="source-tag tag-codeit">코드잇 스프린트</span>
+              <time datetime="2026-01">2026.01</time>
             </div>
           </article>
+
         </div>
+      </div>
+
+    </section>
+
+    <!-- Activities -->
+    <section id="activities" class="fade-up" aria-labelledby="activities-title">
+      <div class="section-header">
+        <div>
+          <span class="section-kicker">Activities</span>
+          <h2 class="section-title" id="activities-title">활동 · 경험</h2>
+        </div>
+      </div>
+
+      <div class="activity-list">
+        <article class="activity-item">
+          <h3 class="activity-title">기술 블로그 운영</h3>
+
+          <div class="activity-meta">
+            <span>개인</span>
+            <span class="activity-meta-divider" aria-hidden="true">|</span>
+            <time datetime="2026-02">2026.02 ~ 현재</time>
+          </div>
+
+          <p class="activity-desc">
+            백엔드 개발, 데이터베이스, 운영 장애 분석과 트러블슈팅 과정을
+            정리하며 학습 및 문제 해결 경험을 기록하고 있습니다.
+          </p>
+
+          <a
+              class="card-link"
+              href="https://limdaeil94.tistory.com"
+              target="_blank"
+              rel="noopener noreferrer"
+          >
+            블로그 바로가기
+          </a>
+        </article>
+        <article class="activity-item">
+          <h3 class="activity-title">깃허브</h3>
+
+          <div class="activity-meta">
+            <span>개인</span>
+            <span class="activity-meta-divider" aria-hidden="true">|</span>
+            <time datetime="2023-12">2023.12 ~ 현재</time>
+          </div>
+
+          <p class="activity-desc">
+            저의 다양한 활동을 기록하고, 개발을 잘하기 위해 노력한 흔적과 제 관심 분야를 살펴볼 수 있는 공간입니다.
+          </p>
+
+          <a
+              class="card-link"
+              href="https://github.com/LimdaeIl"
+              target="_blank"
+              rel="noopener noreferrer"
+          >
+            깃허브 바로가기
+          </a>
+        </article>
+        <article class="activity-item">
+          <h3 class="activity-title">도서 서평단 활동</h3>
+
+          <div class="activity-meta">
+            <span>개인</span>
+            <span class="activity-meta-divider" aria-hidden="true">|</span>
+            <time datetime="2025-12">2025.12 ~ 현재</time>
+          </div>
+
+          <p class="activity-desc">
+            한빛미디어, 이지스퍼블리싱, 길벗, 에이콘 등 여러 IT 출판사에서 서평단으로 꾸준히 활동하고 있습니다.
+          </p>
+
+          <a
+              class="card-link"
+              href="https://limdaeil.tistory.com/search/%EC%B1%85"
+              target="_blank"
+              rel="noopener noreferrer"
+          >
+            서평단 바로가기
+          </a>
+        </article>
       </div>
     </section>
 
@@ -551,44 +1043,44 @@
           <div class="certificate-meta">
             <span>한국산업인력공단</span>
             <span class="certificate-meta-divider" aria-hidden="true">|</span>
-            <time datetime="2026">2026</time>
+            <time datetime="2023">2023</time>
           </div>
         </article>
-      </div>
-    </section>
+        <article class="certificate-item">
+          <h3 class="certificate-title">SQL개발자(SQLD자격)</h3>
 
-    <!-- Activities -->
-    <section id="activities" class="fade-up" aria-labelledby="activities-title">
-      <div class="section-header">
-        <div>
-          <span class="section-kicker">Activities</span>
-          <h2 class="section-title" id="activities-title">활동</h2>
-        </div>
-      </div>
-
-      <div class="activity-list">
-        <article class="activity-item">
-          <h3 class="activity-title">기술 블로그 운영</h3>
-
-          <div class="activity-meta">
-            <span>개인</span>
-            <span class="activity-meta-divider" aria-hidden="true">|</span>
-            <time datetime="2026-02">2026.02 ~ 현재</time>
+          <div class="certificate-meta">
+            <span>한국산업인력공단</span>
+            <span class="certificate-meta-divider" aria-hidden="true">|</span>
+            <time datetime="2023">2023</time>
           </div>
+        </article>
+        <article class="certificate-item">
+          <h3 class="certificate-title">정보처리산업기사</h3>
 
-          <p class="activity-desc">
-            백엔드 개발, 데이터베이스, 운영 장애 분석과 트러블슈팅 과정을
-            정리하며 학습 및 문제 해결 경험을 기록하고 있습니다.
-          </p>
+          <div class="certificate-meta">
+            <span>한국산업인력공단</span>
+            <span class="certificate-meta-divider" aria-hidden="true">|</span>
+            <time datetime="2017">2017</time>
+          </div>
+        </article>
+        <article class="certificate-item">
+          <h3 class="certificate-title">네트워크관리사 2급</h3>
 
-          <a
-              class="card-link"
-              href="https://limdaeil94.tistory.com"
-              target="_blank"
-              rel="noopener noreferrer"
-          >
-            블로그 바로가기
-          </a>
+          <div class="certificate-meta">
+            <span>한국산업인력공단</span>
+            <span class="certificate-meta-divider" aria-hidden="true">|</span>
+            <time datetime="2017">2017</time>
+          </div>
+        </article>
+        <article class="certificate-item">
+          <h3 class="certificate-title">컴퓨터활용능력1급</h3>
+
+          <div class="certificate-meta">
+            <span>한국산업인력공단</span>
+            <span class="certificate-meta-divider" aria-hidden="true">|</span>
+            <time datetime="2017">2017</time>
+          </div>
         </article>
       </div>
     </section>
@@ -612,13 +1104,26 @@
         </div>
 
         <p class="card-desc">
-          운영 가능한 구조, 데이터 정합성, 장애 재발 방지와 성능 개선을
-          고민하는 백엔드 개발자입니다.
+          방문해주셔서 감사합니다. 개발을 잘하고 싶은 백엔드 개발자 임대일입니다. <br/>
+          문제의 원인을 이해하고, 더 나은 방법을 고민하며 하나씩 개선해 나가고 있습니다. <br/>
+          궁금한 점이 있으시다면 언제든지 편하게 연락 주세요.
         </p>
 
-        <a class="card-link" href="mailto:limdaeil94@gmail.com">
-          limdaeil94@gmail.com
-        </a>
+        <div class="contact-list">
+          <div class="contact-item">
+            <span class="contact-label">Email</span>
+            <a href="mailto:optional94@naver.com">
+              optional94@naver.com
+            </a>
+          </div>
+
+          <div class="contact-item">
+            <span class="contact-label">Phone</span>
+            <a href="tel:01063666725">
+              010-6366-6725
+            </a>
+          </div>
+        </div>
       </div>
     </section>
 
